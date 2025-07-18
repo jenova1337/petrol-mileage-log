@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 
 const Profile = ({ user, onUpdate }) => {
-  const navigate = useNavigate();
   const [isEditing, setIsEditing] = useState(false);
   const [editedUser, setEditedUser] = useState({ ...user });
 
@@ -30,7 +29,7 @@ const Profile = ({ user, onUpdate }) => {
       }}
     >
       <button
-        onClick={() => navigate("/dashboard")}
+        onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
         style={{
           marginBottom: "16px",
           backgroundColor: "#007bff",
