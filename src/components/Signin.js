@@ -11,6 +11,7 @@ const Signin = ({ onSignin }) => {
 
     if (user && user.mobile === mobile && user.password === password) {
       alert("Login successful!");
+      localStorage.setItem("user", JSON.stringify(user)); // ✅ This line added
       onSignin(user);
     } else {
       alert("Invalid mobile number or password!");
