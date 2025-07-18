@@ -1,10 +1,8 @@
 import React, { useState } from "react";
 
-const Profile = ({ user, onUpdate }) => {
+const Profile = ({ user = {}, onUpdate }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [editedUser, setEditedUser] = useState({ ...user });
-
-  if (!user) return null;
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -12,7 +10,10 @@ const Profile = ({ user, onUpdate }) => {
   };
 
   const handleSave = () => {
-    onUpdate(editedUser);
+    if (onUpdate) {
+      onUpdate(editedUser);
+    }
+    localStorage.setItem("user", JSON.stringify(editedUser));
     setIsEditing(false);
   };
 
@@ -20,29 +21,14 @@ const Profile = ({ user, onUpdate }) => {
     <div
       style={{
         padding: "20px",
-        maxWidth: "400px",
-        margin: "20px auto",
+        maxWidth: "500px",
+        margin: "auto",
         border: "1px solid #ccc",
         borderRadius: "12px",
-        boxShadow: "0 2px 8px rgba(0,0,0,0.05)",
+        boxShadow: "0 2px 6px rgba(0,0,0,0.05)",
         backgroundColor: "#f9f9f9",
       }}
     >
-      <button
-        onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
-        style={{
-          marginBottom: "16px",
-          backgroundColor: "#007bff",
-          color: "#fff",
-          padding: "8px 20px",
-          borderRadius: "8px",
-          border: "none",
-          cursor: "pointer",
-        }}
-      >
-        ⬅️ Back to Dashboard
-      </button>
-
       <h2 style={{ textAlign: "center", marginBottom: "16px" }}>👤 Profile</h2>
 
       {["name", "gender", "age", "mobile", "bikeCount"].map((field) => (
@@ -56,7 +42,7 @@ const Profile = ({ user, onUpdate }) => {
             <input
               type={field === "age" || field === "bikeCount" ? "number" : "text"}
               name={field}
-              value={editedUser[field]}
+              value={editedUser[field] || ""}
               onChange={handleChange}
               style={{
                 width: "100%",

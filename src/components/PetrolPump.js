@@ -1,193 +1,144 @@
-// src/components/PetrolPump.js
 import React, { useState, useEffect } from "react";
-import jsPDF from "jspdf";
-import "jspdf-autotable";
 
 const PetrolPump = () => {
-  const navigate = useNavigate();
   const [bike, setBike] = useState("");
   const [rate, setRate] = useState("");
   const [amount, setAmount] = useState("");
-  const [km, setKm] = useState("");
+  const [currentKm, setCurrentKm] = useState("");
   const [log, setLog] = useState([]);
-  const [bikes, setBikes] = useState([]);
 
   useEffect(() => {
-    const saved = JSON.parse(localStorage.getItem("petrolLogs")) || [];
-    setLog(saved);
-    const bikeList = JSON.parse(localStorage.getItem("bikes")) || [];
-    setBikes(bikeList);
+    const saved = JSON.parse(localStorage.getItem("petrolLog"));
+    if (saved) setLog(saved);
   }, []);
 
-  const handleSave = () => {
-    if (!bike || !rate || !amount || !km) {
-      alert("❗ Please fill all fields");
-      return;
-    }
-
+  const handleSubmit = (e) => {
+    e.preventDefault();
     const litres = (parseFloat(amount) / parseFloat(rate)).toFixed(2);
-    const entry = {
+    const newEntry = {
       date: new Date().toLocaleString(),
       bike,
       rate,
       amount,
       litres,
-      km,
+      currentKm,
     };
-
-    const updatedLog = [...log, entry];
-    localStorage.setItem("petrolLogs", JSON.stringify(updatedLog));
+    const updatedLog = [newEntry, ...log];
     setLog(updatedLog);
-
-    const mileage = JSON.parse(localStorage.getItem("mileageConstants")) || {};
-    mileage.lastPetrol = {
-      km: entry.km,
-      litres: litres,
-    };
-    localStorage.setItem("mileageConstants", JSON.stringify(mileage));
+    localStorage.setItem("petrolLog", JSON.stringify(updatedLog));
 
     setBike("");
     setRate("");
     setAmount("");
-    setKm("");
+    setCurrentKm("");
   };
 
-  const handleDownloadPDF = () => {
-    const doc = new jsPDF();
-    doc.text("Petrol Fill Log", 14, 10);
-    const tableColumn = ["S.No", "Date", "Bike", "Rate ₹", "Amount ₹", "Litres", "KM"];
-    const tableRows = log.map((entry, index) => [
-      index + 1,
-      entry.date,
-      entry.bike,
-      entry.rate,
-      entry.amount,
-      entry.litres,
-      entry.km,
-    ]);
-    doc.autoTable({ head: [tableColumn], body: tableRows, startY: 20 });
-    doc.save("petrol_log.pdf");
-  };
-
-  const totalAmount = log.reduce((acc, curr) => acc + parseFloat(curr.amount), 0);
+  const totalAmount = log.reduce((sum, item) => sum + parseFloat(item.amount), 0).toFixed(2);
 
   return (
-    <div style={{ padding: "20px", fontFamily: "Arial" }}>
-      <button
-        onClick={() => navigate("/dashboard")}
-        style={{
-          marginBottom: "20px",
-          padding: "8px 16px",
-          backgroundColor: "#ddd",
-          border: "none",
-          borderRadius: "6px",
-          cursor: "pointer",
-        }}
-      >
-        🔙 Back to Dashboard
-      </button>
-
-      <h3>⛽ Petrol Pump Log</h3>
-
-      <div
-        style={{
-          display: "flex",
-          flexDirection: "column",
-          gap: "10px",
-          maxWidth: "300px",
-        }}
-      >
-        <select value={bike} onChange={(e) => setBike(e.target.value)}>
-          <option value="">Select Bike</option>
-          {bikes.map((b, i) => (
-            <option key={i} value={b.name}>
-              {b.name}
-            </option>
-          ))}
-        </select>
-
+    <div
+      style={{
+        padding: 20,
+        maxWidth: 700,
+        margin: "auto",
+        background: "#f9f9f9",
+        borderRadius: 12,
+        boxShadow: "0 2px 8px rgba(0,0,0,0.05)",
+      }}
+    >
+      <h2 style={{ textAlign: "center", marginBottom: 20 }}>⛽ Petrol Log</h2>
+      <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+        <input
+          type="text"
+          value={bike}
+          onChange={(e) => setBike(e.target.value)}
+          placeholder="Bike Name"
+          required
+          style={inputStyle}
+        />
         <input
           type="number"
-          placeholder="Petrol Rate ₹"
           value={rate}
           onChange={(e) => setRate(e.target.value)}
+          placeholder="Petrol Rate ₹"
+          required
+          style={inputStyle}
         />
-
         <input
           type="number"
-          placeholder="Amount ₹"
           value={amount}
           onChange={(e) => setAmount(e.target.value)}
+          placeholder="Amount Paid ₹"
+          required
+          style={inputStyle}
         />
-
         <input
           type="number"
-          placeholder="Current KM in Meter"
-          value={km}
-          onChange={(e) => setKm(e.target.value)}
+          value={currentKm}
+          onChange={(e) => setCurrentKm(e.target.value)}
+          placeholder="Current KM"
+          required
+          style={inputStyle}
         />
+        <button type="submit" style={buttonStyle}>💾 Save Entry</button>
+      </form>
 
-        <button onClick={handleSave}>💾 Save</button>
-      </div>
-
-      <h4 style={{ marginTop: 30 }}>📋 Petrol Fill Log</h4>
-
-      {log.length > 0 ? (
-        <>
-          <div style={{ overflowX: "auto", marginTop: 10 }}>
-            <table
-              style={{
-                borderCollapse: "collapse",
-                width: "100%",
-                border: "1px solid #ccc",
-              }}
-            >
-              <thead style={{ backgroundColor: "#f0f0f0" }}>
-                <tr>
-                  <th style={cellStyle}>S.No</th>
-                  <th style={cellStyle}>Date</th>
-                  <th style={cellStyle}>Bike</th>
-                  <th style={cellStyle}>Rate ₹</th>
-                  <th style={cellStyle}>Amount ₹</th>
-                  <th style={cellStyle}>Litres</th>
-                  <th style={cellStyle}>KM</th>
+      {log.length > 0 && (
+        <div style={{ marginTop: 30 }}>
+          <h3>🧾 Petrol Fill History</h3>
+          <table style={{ width: "100%", borderCollapse: "collapse", marginTop: 10 }}>
+            <thead>
+              <tr style={{ background: "#eee" }}>
+                <th style={thTdStyle}>Date</th>
+                <th style={thTdStyle}>Bike</th>
+                <th style={thTdStyle}>Rate ₹</th>
+                <th style={thTdStyle}>Amount ₹</th>
+                <th style={thTdStyle}>Litres</th>
+                <th style={thTdStyle}>Current KM</th>
+              </tr>
+            </thead>
+            <tbody>
+              {log.map((entry, index) => (
+                <tr key={index}>
+                  <td style={thTdStyle}>{entry.date}</td>
+                  <td style={thTdStyle}>{entry.bike}</td>
+                  <td style={thTdStyle}>{entry.rate}</td>
+                  <td style={thTdStyle}>{entry.amount}</td>
+                  <td style={thTdStyle}>{entry.litres}</td>
+                  <td style={thTdStyle}>{entry.currentKm}</td>
                 </tr>
-              </thead>
-              <tbody>
-                {log.map((entry, index) => (
-                  <tr key={index}>
-                    <td style={cellStyle}>{index + 1}</td>
-                    <td style={cellStyle}>{entry.date}</td>
-                    <td style={cellStyle}>{entry.bike}</td>
-                    <td style={cellStyle}>{entry.rate}</td>
-                    <td style={cellStyle}>{entry.amount}</td>
-                    <td style={cellStyle}>{entry.litres}</td>
-                    <td style={cellStyle}>{entry.km}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+              ))}
+            </tbody>
+          </table>
+          <div style={{ textAlign: "right", marginTop: 10, fontWeight: "bold" }}>
+            Total Amount: ₹{totalAmount}
           </div>
-
-          <p style={{ marginTop: 10 }}>
-            <strong>💰 Total Petrol ₹:</strong> ₹{totalAmount.toFixed(2)}
-          </p>
-
-          <button onClick={handleDownloadPDF} style={{ marginTop: 10 }}>
-            ⬇️ Download PDF
-          </button>
-        </>
-      ) : (
-        <p>📭 No petrol fill logs found.</p>
+        </div>
       )}
     </div>
   );
 };
 
-const cellStyle = {
+const inputStyle = {
+  padding: "10px",
+  borderRadius: "6px",
   border: "1px solid #ccc",
-  padding: "6px",
-  textAlign: "left",
+  width: "100%",
+};
+
+const buttonStyle = {
+  padding: "10px",
+  backgroundColor: "#28a745",
+  color: "white",
+  border: "none",
+  borderRadius: "6px",
+  cursor: "pointer",
+};
+
+const thTdStyle = {
+  border: "1px solid #ddd",
+  padding: "8px",
+  textAlign: "center",
 };
 
 export default PetrolPump;

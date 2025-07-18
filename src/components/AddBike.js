@@ -1,4 +1,3 @@
-// src/components/AddBike.js
 import React, { useState } from "react";
 
 const AddBike = () => {
@@ -13,25 +12,22 @@ const AddBike = () => {
     chassisNo: "",
   });
 
-  const navigate = useNavigate();
+  const [bikes, setBikes] = useState(() => {
+    const saved = localStorage.getItem("bikes");
+    return saved ? JSON.parse(saved) : [];
+  });
 
   const handleChange = (e) => {
-    setBike({ ...bike, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+    setBike((prev) => ({ ...prev, [name]: value }));
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
-
-    // Manual required field check
-    if (!bike.name || !bike.model || !bike.kms || !bike.purchaseDate) {
-      alert("❗ Please fill all required fields.");
-      return;
-    }
-
-    const bikes = JSON.parse(localStorage.getItem("bikes")) || [];
-    bikes.push(bike);
-    localStorage.setItem("bikes", JSON.stringify(bikes));
-    alert("✅ Bike added successfully!");
+    const updatedBikes = [...bikes, bike];
+    localStorage.setItem("bikes", JSON.stringify(updatedBikes));
+    setBikes(updatedBikes);
+    alert("Bike added successfully!");
     setBike({
       name: "",
       model: "",
@@ -45,101 +41,63 @@ const AddBike = () => {
   };
 
   return (
-    <div style={{ padding: 20 }}>
-      {/* 🔙 Back to Dashboard */}
-      <button
-        onClick={() => navigate("/dashboard")}
-        style={{
-          marginBottom: "20px",
-          backgroundColor: "#4CAF50",
-          color: "white",
-          padding: "8px 16px",
-          border: "none",
-          borderRadius: "6px",
-          cursor: "pointer",
-        }}
-      >
-        ← Back to Dashboard
-      </button>
-
+    <div
+      style={{
+        maxWidth: "600px",
+        margin: "auto",
+        padding: "20px",
+        border: "1px solid #ccc",
+        borderRadius: "12px",
+        boxShadow: "0 2px 6px rgba(0,0,0,0.1)",
+        backgroundColor: "#f9f9f9",
+      }}
+    >
+      <h2 style={{ textAlign: "center", marginBottom: "16px" }}>➕ Add Bike</h2>
       <form onSubmit={handleSubmit}>
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px" }}>
-          <input
-            type="text"
-            name="name"
-            placeholder="Bike Name"
-            value={bike.name}
-            onChange={handleChange}
-            required
-          />
-          <input
-            type="text"
-            name="model"
-            placeholder="Model"
-            value={bike.model}
-            onChange={handleChange}
-            required
-          />
-          <input
-            type="text"
-            name="kms"
-            placeholder="KMs Run"
-            value={bike.kms}
-            onChange={handleChange}
-            required
-          />
-          <input
-            type="date"
-            name="purchaseDate"
-            placeholder="Purchase Date"
-            value={bike.purchaseDate}
-            onChange={handleChange}
-            required
-          />
-          <input
-            type="text"
-            name="color"
-            placeholder="Color"
-            value={bike.color}
-            onChange={handleChange}
-          />
-          <input
-            type="text"
-            name="regNo"
-            placeholder="Registration No"
-            value={bike.regNo}
-            onChange={handleChange}
-          />
-          <input
-            type="text"
-            name="engineNo"
-            placeholder="Engine No (optional)"
-            value={bike.engineNo}
-            onChange={handleChange}
-          />
-          <input
-            type="text"
-            name="chassisNo"
-            placeholder="Chassis No (optional)"
-            value={bike.chassisNo}
-            onChange={handleChange}
-          />
-        </div>
+        {[
+          { label: "Bike Name", name: "name" },
+          { label: "Model / Year", name: "model" },
+          { label: "Kilometers", name: "kms" },
+          { label: "Purchase Date", name: "purchaseDate", type: "date" },
+          { label: "Color", name: "color" },
+          { label: "Registration No.", name: "regNo" },
+          { label: "Engine No. (optional)", name: "engineNo" },
+          { label: "Chassis No. (optional)", name: "chassisNo" },
+        ].map(({ label, name, type = "text" }) => (
+          <div key={name} style={{ marginBottom: "12px" }}>
+            <label style={{ fontWeight: "bold", display: "block", marginBottom: "4px" }}>
+              {label}:
+            </label>
+            <input
+              type={type}
+              name={name}
+              value={bike[name]}
+              onChange={handleChange}
+              required={name !== "engineNo" && name !== "chassisNo"}
+              style={{
+                width: "100%",
+                padding: "8px",
+                borderRadius: "6px",
+                border: "1px solid #ccc",
+              }}
+            />
+          </div>
+        ))}
 
-        <div style={{ marginTop: "20px", textAlign: "center" }}>
+        <div style={{ textAlign: "center", marginTop: "20px" }}>
           <button
             type="submit"
             style={{
-              backgroundColor: "#2196F3",
-              color: "#fff",
               padding: "10px 24px",
+              backgroundColor: "#28a745",
+              color: "#fff",
               border: "none",
-              borderRadius: "8px",
+              borderRadius: "6px",
               fontSize: "16px",
               cursor: "pointer",
             }}
           >
-            🚀 Add Bike
+            Add Bike
           </button>
         </div>
       </form>
