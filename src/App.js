@@ -8,8 +8,6 @@ import ReserveAlert from "./components/ReserveAlert";
 import PetrolPump from "./components/PetrolPump";
 import Mileage from "./components/Mileage";
 import Summary from "./components/Summary";
-import { Card, CardContent } from "./components/ui/card";
-import { Button } from "./components/ui/button";
 
 const App = () => {
   const [user, setUser] = useState(null);
@@ -53,8 +51,8 @@ const App = () => {
       {screen === "dashboard" && (
         <>
           <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 10 }}>
-            <h2>🏍️ Petrol Mileage Log Dashboard</h2>
-            <Button onClick={handleLogout}>🚪 Logout</Button>
+            <h2>🏍️ Petrol Expense Monitor Dashboard</h2>
+            <button onClick={handleLogout}>🚪 Logout</button>
           </div>
 
           <div style={{ display: "flex", flexWrap: "wrap", marginBottom: 20 }}>
@@ -67,8 +65,8 @@ const App = () => {
             <div style={tabStyle("summary")} onClick={() => setTab("summary")}>📈 Summary</div>
           </div>
 
-          <Card className="p-4 rounded-xl shadow-md mb-4">
-            <CardContent>
+          <div className="p-4 rounded-xl shadow-md mb-4" style={{ padding: 20, background: "#fafafa", borderRadius: "10px", boxShadow: "0 2px 6px rgba(0,0,0,0.1)" }}>
+            <div>
               {tab === "profile" && <Profile user={user} />}
               {tab === "addBike" && <AddBike />}
               {tab === "bikeDetails" && <BikeDetails />}
@@ -76,8 +74,8 @@ const App = () => {
               {tab === "pump" && <PetrolPump />}
               {tab === "mileage" && <Mileage />}
               {tab === "summary" && <Summary />}
-            </CardContent>
-          </Card>
+            </div>
+          </div>
         </>
       )}
 
@@ -99,5 +97,6 @@ const App = () => {
     </div>
   );
 };
+
 
 export default App;
