@@ -1,7 +1,6 @@
 // ✅ Mileage.js
 // src/components/Mileage.js
 import React, { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
 
 const Mileage = () => {
   const navigate = useNavigate();

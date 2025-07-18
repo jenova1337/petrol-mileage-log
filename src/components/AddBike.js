@@ -1,6 +1,5 @@
 // src/components/AddBike.js
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
 
 const AddBike = () => {
   const [bike, setBike] = useState({

@@ -1,6 +1,5 @@
 // src/components/BikeDetails.js
 import React, { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
 
 const BikeDetails = () => {
   const [bikes, setBikes] = useState([]);

@@ -2,7 +2,6 @@
 import React, { useState, useEffect } from "react";
 import jsPDF from "jspdf";
 import "jspdf-autotable";
-import { useNavigate } from "react-router-dom";
 
 const PetrolPump = () => {
   const navigate = useNavigate();

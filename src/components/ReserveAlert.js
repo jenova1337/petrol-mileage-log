@@ -1,6 +1,5 @@
 // src/components/ReserveAlert.js
 import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
 
 const ReserveAlert = () => {
   const navigate = useNavigate();

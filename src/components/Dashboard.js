@@ -8,7 +8,6 @@ import PetrolPump from "./PetrolPump";
 import Mileage from "./Mileage";
 import Summary from "./Summary";
 import Instructions from "./Instructions";
-import { useNavigate } from "react-router-dom";
 
 const Dashboard = () => {
   const navigate = useNavigate();
