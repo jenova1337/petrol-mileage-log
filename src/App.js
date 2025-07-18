@@ -1,3 +1,4 @@
+// src/App.js
 import React, { useState, useEffect } from "react";
 import Signup from "./components/Signup";
 import Signin from "./components/Signin";
@@ -18,7 +19,6 @@ const App = () => {
   const handleSignin = (userData) => {
     setUser(userData);
     setScreen("dashboard");
-    localStorage.setItem("user", JSON.stringify(userData));
   };
 
   const handleLogout = () => {
@@ -31,11 +31,8 @@ const App = () => {
     <div style={{ fontFamily: "sans-serif", padding: "20px" }}>
       {screen === "signup" && <Signup onSignup={() => setScreen("signin")} />}
       {screen === "signin" && <Signin onSignin={handleSignin} />}
-
-      {screen === "dashboard" && (
-        <Dashboard user={user} onLogout={handleLogout} />
-      )}
-
+      {screen === "dashboard" && <Dashboard onLogout={handleLogout} />}
+      
       {screen !== "dashboard" && (
         <div style={{ textAlign: "center", marginTop: 20 }}>
           {screen === "signin" ? (
