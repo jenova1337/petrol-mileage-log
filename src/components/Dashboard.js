@@ -10,11 +10,9 @@ import Summary from "./Summary";
 import Instructions from "./Instructions";
 
 const Dashboard = () => {
-  const navigate = useNavigate();
-
   const handleLogout = () => {
-    localStorage.removeItem("loggedInUser");
-    navigate("/signin");
+    localStorage.removeItem("user");
+    window.location.reload();
   };
 
   const sectionStyle = {
@@ -102,4 +100,3 @@ const Dashboard = () => {
 };
 
 export default Dashboard;
-
