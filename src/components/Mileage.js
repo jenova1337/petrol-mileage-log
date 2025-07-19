@@ -1,104 +1,82 @@
 import React, { useEffect, useState } from "react";
 
 const Mileage = () => {
-  const [mileageData, setMileageData] = useState([]);
+  const [mileageLogs, setMileageLogs] = useState([]);
 
   useEffect(() => {
-    const reserves = JSON.parse(localStorage.getItem("reserveLog")) || [];
-    const petrols = JSON.parse(localStorage.getItem("petrolLog")) || [];
+    const reserves = JSON.parse(localStorage.getItem("reserveAlerts") || "[]");
+    const petrols = JSON.parse(localStorage.getItem("petrolLogs") || "[]");
 
-    const sequences = [];
-    let firstReserve = null;
-    let petrolEntry = null;
-    let secondReserve = null;
+    const results = [];
 
-    for (let i = 0; i < reserves.length; i++) {
-      const res = reserves[i];
+    for (let i = 0; i < reserves.length - 1; i++) {
+      const beforeReserve = reserves[i];
+      const afterReserve = reserves[i + 1];
 
-      if (!firstReserve) {
-        firstReserve = res;
-      } else if (firstReserve && !petrolEntry) {
-        // Find the latest petrol entry between the two reserves
-        petrolEntry = petrols.find((p) => {
-          return (
-            new Date(p.date) > new Date(firstReserve.date) &&
-            (!secondReserve || new Date(p.date) < new Date(res.date))
-          );
+      const matchingPetrol = petrols.find((p) => {
+        const pTime = new Date(p.date).getTime();
+        const beforeTime = new Date(beforeReserve.date).getTime();
+        const afterTime = new Date(afterReserve.date).getTime();
+        return pTime > beforeTime && pTime < afterTime && p.bike === beforeReserve.bike;
+      });
+
+      if (matchingPetrol) {
+        const mileage = (
+          (Number(afterReserve.reserveKm) - Number(beforeReserve.reserveKm)) /
+          Number(matchingPetrol.litres)
+        ).toFixed(2);
+
+        results.push({
+          bike: beforeReserve.bike,
+          fromKm: beforeReserve.reserveKm,
+          toKm: afterReserve.reserveKm,
+          litres: matchingPetrol.litres,
+          mileage,
+          petrolDate: matchingPetrol.date,
         });
-        secondReserve = res;
-
-        if (firstReserve && petrolEntry && secondReserve) {
-          const kmDiff =
-            parseFloat(secondReserve.km) - parseFloat(firstReserve.km);
-          const litres = parseFloat(petrolEntry.litres);
-          const mileage = litres > 0 ? (kmDiff / litres).toFixed(2) : "N/A";
-
-          sequences.push({
-            beforeReserveKm: firstReserve.km,
-            litres: petrolEntry.litres,
-            afterReserveKm: secondReserve.km,
-            mileage,
-            date: secondReserve.date,
-          });
-
-          // Shift the window
-          firstReserve = secondReserve;
-          petrolEntry = null;
-          secondReserve = null;
-        }
       }
     }
 
-    setMileageData(sequences);
+    setMileageLogs(results);
   }, []);
 
   return (
-    <div
-      style={{
-        padding: 20,
-        maxWidth: 700,
-        margin: "auto",
-        background: "#f9f9f9",
-        borderRadius: 12,
-        boxShadow: "0 2px 8px rgba(0,0,0,0.05)",
-      }}
-    >
-      <h2 style={{ textAlign: "center", marginBottom: 20 }}>📊 Mileage Report</h2>
-
-      {mileageData.length === 0 ? (
-        <p style={{ textAlign: "center" }}>No valid Reserve → Petrol → Reserve sequence found.</p>
-      ) : (
-        <table style={{ width: "100%", borderCollapse: "collapse" }}>
-          <thead>
-            <tr style={{ background: "#eee" }}>
-              <th style={cellStyle}>Before Reserve KM</th>
-              <th style={cellStyle}>Petrol Poured (Litres)</th>
-              <th style={cellStyle}>After Reserve KM</th>
-              <th style={cellStyle}>Mileage (km/l)</th>
-              <th style={cellStyle}>Date</th>
+    <div style={{ padding: 20 }}>
+      <h2>📊 Mileage Report</h2>
+      <table style={styles.table}>
+        <thead>
+          <tr>
+            <th>Bike</th>
+            <th>From KM</th>
+            <th>To KM</th>
+            <th>Litres</th>
+            <th>Petrol Date</th>
+            <th>KM/L</th>
+          </tr>
+        </thead>
+        <tbody>
+          {mileageLogs.map((log, index) => (
+            <tr key={index}>
+              <td>{log.bike}</td>
+              <td>{log.fromKm}</td>
+              <td>{log.toKm}</td>
+              <td>{log.litres}</td>
+              <td>{log.petrolDate}</td>
+              <td><strong>{log.mileage}</strong></td>
             </tr>
-          </thead>
-          <tbody>
-            {mileageData.map((entry, index) => (
-              <tr key={index}>
-                <td style={cellStyle}>{entry.beforeReserveKm}</td>
-                <td style={cellStyle}>{entry.litres}</td>
-                <td style={cellStyle}>{entry.afterReserveKm}</td>
-                <td style={cellStyle}>{entry.mileage}</td>
-                <td style={cellStyle}>{entry.date}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      )}
+          ))}
+        </tbody>
+      </table>
     </div>
   );
 };
 
-const cellStyle = {
-  border: "1px solid #ccc",
-  padding: "8px",
-  textAlign: "center",
+const styles = {
+  table: {
+    width: "100%",
+    borderCollapse: "collapse",
+    marginTop: "20px",
+  },
 };
 
 export default Mileage;

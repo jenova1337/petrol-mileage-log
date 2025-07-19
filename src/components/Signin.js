@@ -1,4 +1,3 @@
-// src/Signin.js
 import React, { useState } from "react";
 
 const Signin = ({ onSignin }) => {
@@ -11,7 +10,6 @@ const Signin = ({ onSignin }) => {
 
     if (user && user.mobile === mobile && user.password === password) {
       alert("Login successful!");
-      localStorage.setItem("user", JSON.stringify(user)); // ✅ This line added
       onSignin(user);
     } else {
       alert("Invalid mobile number or password!");
@@ -44,7 +42,7 @@ const Signin = ({ onSignin }) => {
 
 const styles = {
   container: { padding: 20, maxWidth: 400, margin: "auto" },
-  form: { display: "flex", flexDirection: "column", gap: 10 },
+  form: { display: "flex", flexDirection: "column", gap: 10 }
 };
 
 export default Signin;

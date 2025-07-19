@@ -4,105 +4,60 @@ const AddBike = () => {
   const [bike, setBike] = useState({
     name: "",
     model: "",
+    year: "",
     kms: "",
     purchaseDate: "",
     color: "",
     regNo: "",
     engineNo: "",
-    chassisNo: "",
-  });
-
-  const [bikes, setBikes] = useState(() => {
-    const saved = localStorage.getItem("bikes");
-    return saved ? JSON.parse(saved) : [];
+    chassisNo: ""
   });
 
   const handleChange = (e) => {
-    const { name, value } = e.target;
-    setBike((prev) => ({ ...prev, [name]: value }));
+    setBike((prev) => ({ ...prev, [e.target.name]: e.target.value }));
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    const updatedBikes = [...bikes, bike];
-    localStorage.setItem("bikes", JSON.stringify(updatedBikes));
-    setBikes(updatedBikes);
-    alert("Bike added successfully!");
+    const bikes = JSON.parse(localStorage.getItem("bikes") || "[]");
+    bikes.push(bike);
+    localStorage.setItem("bikes", JSON.stringify(bikes));
+    alert("✅ Bike added!");
     setBike({
       name: "",
       model: "",
+      year: "",
       kms: "",
       purchaseDate: "",
       color: "",
       regNo: "",
       engineNo: "",
-      chassisNo: "",
+      chassisNo: ""
     });
   };
 
   return (
-    <div
-      style={{
-        maxWidth: "600px",
-        margin: "auto",
-        padding: "20px",
-        border: "1px solid #ccc",
-        borderRadius: "12px",
-        boxShadow: "0 2px 6px rgba(0,0,0,0.1)",
-        backgroundColor: "#f9f9f9",
-      }}
-    >
-      <h2 style={{ textAlign: "center", marginBottom: "16px" }}>➕ Add Bike</h2>
-      <form onSubmit={handleSubmit}>
-        {[
-          { label: "Bike Name", name: "name" },
-          { label: "Model / Year", name: "model" },
-          { label: "Kilometers", name: "kms" },
-          { label: "Purchase Date", name: "purchaseDate", type: "date" },
-          { label: "Color", name: "color" },
-          { label: "Registration No.", name: "regNo" },
-          { label: "Engine No. (optional)", name: "engineNo" },
-          { label: "Chassis No. (optional)", name: "chassisNo" },
-        ].map(({ label, name, type = "text" }) => (
-          <div key={name} style={{ marginBottom: "12px" }}>
-            <label style={{ fontWeight: "bold", display: "block", marginBottom: "4px" }}>
-              {label}:
-            </label>
-            <input
-              type={type}
-              name={name}
-              value={bike[name]}
-              onChange={handleChange}
-              required={name !== "engineNo" && name !== "chassisNo"}
-              style={{
-                width: "100%",
-                padding: "8px",
-                borderRadius: "6px",
-                border: "1px solid #ccc",
-              }}
-            />
-          </div>
-        ))}
-
-        <div style={{ textAlign: "center", marginTop: "20px" }}>
-          <button
-            type="submit"
-            style={{
-              padding: "10px 24px",
-              backgroundColor: "#28a745",
-              color: "#fff",
-              border: "none",
-              borderRadius: "6px",
-              fontSize: "16px",
-              cursor: "pointer",
-            }}
-          >
-            Add Bike
-          </button>
-        </div>
+    <div style={styles.container}>
+      <h2>➕ Add Bike</h2>
+      <form onSubmit={handleSubmit} style={styles.form}>
+        <input name="name" placeholder="Bike Name" value={bike.name} onChange={handleChange} required />
+        <input name="model" placeholder="Model" value={bike.model} onChange={handleChange} required />
+        <input name="year" type="number" placeholder="Year" value={bike.year} onChange={handleChange} />
+        <input name="kms" type="number" placeholder="Total Kilometers" value={bike.kms} onChange={handleChange} />
+        <input name="purchaseDate" type="date" value={bike.purchaseDate} onChange={handleChange} />
+        <input name="color" placeholder="Color" value={bike.color} onChange={handleChange} />
+        <input name="regNo" placeholder="Registration No." value={bike.regNo} onChange={handleChange} />
+        <input name="engineNo" placeholder="Engine No. (Optional)" value={bike.engineNo} onChange={handleChange} />
+        <input name="chassisNo" placeholder="Chassis No. (Optional)" value={bike.chassisNo} onChange={handleChange} />
+        <button type="submit">Save Bike</button>
       </form>
     </div>
   );
+};
+
+const styles = {
+  container: { padding: 20, maxWidth: 500, margin: "auto" },
+  form: { display: "flex", flexDirection: "column", gap: 10 }
 };
 
 export default AddBike;

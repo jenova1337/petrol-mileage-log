@@ -1,37 +1,36 @@
-// src/Signup.js
 import React, { useState } from "react";
 
 const Signup = ({ onSignup }) => {
-  const [formData, setFormData] = useState({
+  const [form, setForm] = useState({
     name: "",
     gender: "",
     age: "",
-    bikeCount: "",
     mobile: "",
-    password: ""
+    password: "",
+    bikeCount: ""
   });
 
   const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+    setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    localStorage.setItem("user", JSON.stringify(formData));
-    alert("Signup successful!");
+    localStorage.setItem("user", JSON.stringify(form));
+    alert("Signup successful. Please login.");
     onSignup();
   };
 
   return (
     <div style={styles.container}>
-      <h2>🚀 Sign Up</h2>
+      <h2>📝 Sign Up</h2>
       <form onSubmit={handleSubmit} style={styles.form}>
         <input name="name" placeholder="Name" required onChange={handleChange} />
         <input name="gender" placeholder="Gender" required onChange={handleChange} />
         <input name="age" type="number" placeholder="Age" required onChange={handleChange} />
-        <input name="bikeCount" type="number" placeholder="No. of Bikes" required onChange={handleChange} />
-        <input name="mobile" type="tel" placeholder="Mobile Number" required onChange={handleChange} />
+        <input name="mobile" placeholder="Mobile Number" required onChange={handleChange} />
         <input name="password" type="password" placeholder="Password" required onChange={handleChange} />
+        <input name="bikeCount" type="number" placeholder="Number of Bikes" required onChange={handleChange} />
         <button type="submit">Register</button>
       </form>
     </div>
@@ -44,4 +43,3 @@ const styles = {
 };
 
 export default Signup;
-
