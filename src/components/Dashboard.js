@@ -1,3 +1,4 @@
+// src/components/Dashboard.js
 import React from "react";
 import Profile from "./Profile";
 import Instructions from "./Instructions";
@@ -9,88 +10,92 @@ import Mileage from "./Mileage";
 import Summary from "./Summary";
 
 const Dashboard = ({ tab, setTab, onLogout, user }) => {
-  const sectionStyle = {
-    border: "1px solid #ccc",
-    borderRadius: "12px",
-    padding: "16px",
-    marginBottom: "20px",
-    backgroundColor: "#f9f9f9",
-    boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
-    textAlign: "left",
+  const tabs = [
+    { key: "profile", label: "👤 Profile" },
+    { key: "instructions", label: "📘 Instructions" },
+    { key: "addBike", label: "➕ Add Bike" },
+    { key: "bikeDetails", label: "📋 Bike Details" },
+    { key: "reserveAlert", label: "🔔 Reserve Alert" },
+    { key: "petrolPump", label: "⛽ Petrol Pump" },
+    { key: "mileage", label: "📊 Mileage" },
+    { key: "summary", label: "📈 Summary" },
+  ];
+
+  const renderTabContent = () => {
+    switch (tab) {
+      case "profile":
+        return <Profile user={user} />;
+      case "instructions":
+        return <Instructions />;
+      case "addBike":
+        return <AddBike />;
+      case "bikeDetails":
+        return <BikeDetails />;
+      case "reserveAlert":
+        return <ReserveAlert />;
+      case "petrolPump":
+        return <PetrolPump />;
+      case "mileage":
+        return <Mileage />;
+      case "summary":
+        return <Summary />;
+      default:
+        return null;
+    }
   };
 
   return (
-    <div style={{ fontFamily: "sans-serif" }}>
-      <div style={{ textAlign: "right", marginBottom: "10px" }}>
+    <div style={{ display: "flex", height: "100vh", fontFamily: "sans-serif" }}>
+      {/* Left Sidebar Tabs */}
+      <div
+        style={{
+          width: "220px",
+          backgroundColor: "#f0f0f0",
+          padding: "20px",
+          borderRight: "1px solid #ccc",
+        }}
+      >
+        <h2 style={{ marginBottom: "20px" }}>🏍️ Dashboard</h2>
+        {tabs.map((t) => (
+          <button
+            key={t.key}
+            onClick={() => setTab(t.key)}
+            style={{
+              display: "block",
+              width: "100%",
+              padding: "10px",
+              marginBottom: "10px",
+              textAlign: "left",
+              backgroundColor: tab === t.key ? "#4CAF50" : "#fff",
+              color: tab === t.key ? "#fff" : "#000",
+              border: "1px solid #ccc",
+              borderRadius: "8px",
+              cursor: "pointer",
+            }}
+          >
+            {t.label}
+          </button>
+        ))}
         <button
           onClick={onLogout}
           style={{
+            marginTop: "40px",
+            padding: "10px",
             backgroundColor: "#ff4d4d",
             color: "#fff",
-            padding: "10px 20px",
-            borderRadius: "8px",
             border: "none",
+            borderRadius: "8px",
+            cursor: "pointer",
+            width: "100%",
           }}
         >
           🚪 Log Out
         </button>
       </div>
 
-      <h1 style={{ marginBottom: "30px" }}>🏍️ Petrol Expense Monitor Dashboard</h1>
-
-      <div
-        style={{
-          display: "flex",
-          gap: "20px",
-          alignItems: "flex-start",
-          flexWrap: "wrap",
-        }}
-      >
-        {/* Left Column: Profile & Instructions */}
-        <div style={{ flex: "1 1 300px", minWidth: "300px" }}>
-          <div style={sectionStyle}>
-            <h2>👤 Profile</h2>
-            <Profile user={user} />
-          </div>
-
-          <div style={sectionStyle}>
-            <h2>📘 Instructions</h2>
-            <Instructions />
-          </div>
-        </div>
-
-        {/* Right Column: Rest of the sections */}
-        <div style={{ flex: "2 1 600px", minWidth: "600px" }}>
-          <div style={sectionStyle}>
-            <h2>➕ Add Bike</h2>
-            <AddBike />
-          </div>
-
-          <div style={sectionStyle}>
-            <h2>📋 Bike Details</h2>
-            <BikeDetails />
-          </div>
-
-          <div style={sectionStyle}>
-            <h2>🔔 Reserve Alert</h2>
-            <ReserveAlert />
-          </div>
-
-          <div style={sectionStyle}>
-            <h2>⛽ Petrol Pump</h2>
-            <PetrolPump />
-          </div>
-
-          <div style={sectionStyle}>
-            <h2>📊 Mileage</h2>
-            <Mileage />
-          </div>
-
-          <div style={sectionStyle}>
-            <h2>📈 Summary</h2>
-            <Summary />
-          </div>
-        </div>
+      {/* Right Content Area */}
+      <div style={{ flex: 1, padding: "30px", overflowY: "auto" }}>
+        {renderTabContent()}
       </div>
     </div>
   );
