@@ -2,13 +2,6 @@ import React, { useState, useEffect } from "react";
 import Signup from "./components/Signup";
 import Signin from "./components/Signin";
 import Dashboard from "./components/Dashboard";
-import Profile from "./components/Profile";
-import AddBike from "./components/AddBike";
-import BikeDetails from "./components/BikeDetails";
-import ReserveAlert from "./components/ReserveAlert";
-import PetrolPump from "./components/PetrolPump";
-import Mileage from "./components/Mileage";
-import Summary from "./components/Summary";
 
 const App = () => {
   const [user, setUser] = useState(null);
@@ -36,33 +29,33 @@ const App = () => {
 
   return (
     <div style={{ fontFamily: "sans-serif", padding: "20px" }}>
-      {/* Signup / Signin */}
+      {/* Signup & Signin Screens */}
       {screen === "signup" && <Signup onSignup={() => setScreen("signin")} />}
       {screen === "signin" && <Signin onSignin={handleSignin} />}
 
       {/* Dashboard */}
       {screen === "dashboard" && (
-        <>
-          <Dashboard tab={tab} setTab={setTab} onLogout={handleLogout} />
-
-          {/* Render each tab */}
-          {tab === "profile" && <Profile user={user} />}
-          {tab === "addBike" && <AddBike />}
-          {tab === "bikeDetails" && <BikeDetails />}
-          {tab === "reserve" && <ReserveAlert />}
-          {tab === "pump" && <PetrolPump />}
-          {tab === "mileage" && <Mileage />}
-          {tab === "summary" && <Summary />}
-        </>
+        <Dashboard
+          tab={tab}
+          setTab={setTab}
+          onLogout={handleLogout}
+          user={user}
+        />
       )}
 
-      {/* Navigation links (bottom) */}
+      {/* Navigation between signin/signup */}
       {screen !== "dashboard" && (
         <div style={{ textAlign: "center", marginTop: 20 }}>
           {screen === "signin" ? (
-            <p>Don't have an account? <button onClick={() => setScreen("signup")}>Sign Up</button></p>
+            <p>
+              Don't have an account?{" "}
+              <button onClick={() => setScreen("signup")}>Sign Up</button>
+            </p>
           ) : (
-            <p>Already have an account? <button onClick={() => setScreen("signin")}>Sign In</button></p>
+            <p>
+              Already have an account?{" "}
+              <button onClick={() => setScreen("signin")}>Sign In</button>
+            </p>
           )}
         </div>
       )}
