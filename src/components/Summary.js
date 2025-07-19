@@ -1,5 +1,6 @@
-// Summary.js - React component
 import React, { useEffect, useState } from "react";
+import jsPDF from "jspdf";
+import "jspdf-autotable";
 
 const Summary = () => {
   const [data, setData] = useState([]);
@@ -61,6 +62,50 @@ const Summary = () => {
 
   const bikeLogs = groupByBike();
 
+  const downloadSummaryPDF = () => {
+    const doc = new jsPDF();
+    doc.text("Petrol Summary Report", 14, 16);
+    let startY = 25;
+
+    Object.entries(bikeLogs).forEach(([bike, logs], index) => {
+      const rows = logs.map((log, idx) => [
+        idx + 1,
+        log.date,
+        log.rate,
+        log.amount,
+        log.litres,
+        log.km,
+      ]);
+
+      doc.text(`${bike}`, 14, startY);
+      doc.autoTable({
+        head: [["S.No", "Date", "Rate ₹", "Amount ₹", "Litres", "KM"]],
+        body: rows,
+        startY: startY + 5,
+      });
+
+      startY = doc.lastAutoTable.finalY + 10;
+    });
+
+    // Append weekly summary
+    doc.text("🗓️ Weekly Summary", 14, startY);
+    startY += 5;
+    Object.entries(weeklySummary).forEach(([bike, sum]) => {
+      doc.text(`${bike} – KM: ${sum.km} | ₹: ${sum.amount}`, 14, startY);
+      startY += 6;
+    });
+
+    startY += 8;
+    doc.text("📅 Monthly Summary", 14, startY);
+    startY += 5;
+    Object.entries(monthlySummary).forEach(([bike, sum]) => {
+      doc.text(`${bike} – KM: ${sum.km} | ₹: ${sum.amount}`, 14, startY);
+      startY += 6;
+    });
+
+    doc.save("Summary_Report.pdf");
+  };
+
   return (
     <div style={{ padding: "20px" }}>
       <h2>📊 Summary</h2>
@@ -96,9 +141,11 @@ const Summary = () => {
         </div>
       ))}
 
-      <button onClick={() => setShowSummary(!showSummary)}>
+      <button onClick={() => setShowSummary(!showSummary)} style={{ marginRight: 10 }}>
         {showSummary ? "Hide" : "Show"} Weekly & Monthly Summary
       </button>
+
+      <button onClick={downloadSummaryPDF}>📥 Download Summary PDF</button>
 
       {showSummary && (
         <>
