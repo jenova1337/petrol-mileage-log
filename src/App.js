@@ -40,7 +40,7 @@ const App = () => {
     borderBottom: tab === key ? "2px solid blue" : "none",
     fontWeight: tab === key ? "bold" : "normal",
     background: "#eee",
-    borderRadius: "5px",
+    borderRadius: "5px"
   });
 
   return (
@@ -50,10 +50,11 @@ const App = () => {
 
       {screen === "dashboard" && (
         <>
-          <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 10 }}>
-            <h2>🏍️ Petrol Mileage Tracker</h2>
-            <button onClick={handleLogout}>🚪 Logout</button>
+          <div style={{ textAlign: "right" }}>
+            <button onClick={handleLogout}>🚪 Log Out</button>
           </div>
+
+          <h2>🏍️ Petrol Expense Monitor Dashboard</h2>
 
           <div style={{ display: "flex", flexWrap: "wrap", marginBottom: 20 }}>
             <div style={tabStyle("profile")} onClick={() => setTab("profile")}>👤 Profile</div>
@@ -62,18 +63,17 @@ const App = () => {
             <div style={tabStyle("reserve")} onClick={() => setTab("reserve")}>🔔 Reserve Alert</div>
             <div style={tabStyle("pump")} onClick={() => setTab("pump")}>⛽ Petrol Pump</div>
             <div style={tabStyle("mileage")} onClick={() => setTab("mileage")}>📊 Mileage</div>
-            <div style={tabStyle("summary")} onClick={() => setTab("summary")}>📈 Summary</div>
+            <div style={tabStyle("summary")} onClick={() => setTab("summary")}>📊 Summary</div>
           </div>
 
-          <div style={{ padding: 20, background: "#fafafa", borderRadius: "10px", boxShadow: "0 2px 6px rgba(0,0,0,0.1)" }}>
-            {tab === "profile" && <Profile user={user} />}
-            {tab === "addBike" && <AddBike />}
-            {tab === "bikeDetails" && <BikeDetails />}
-            {tab === "reserve" && <ReserveAlert />}
-            {tab === "pump" && <PetrolPump />}
-            {tab === "mileage" && <Mileage />}
-            {tab === "summary" && <Summary />}
-          </div>
+          {/* Content based on selected tab */}
+          {tab === "profile" && <Profile user={user} />}
+          {tab === "addBike" && <AddBike />}
+          {tab === "bikeDetails" && <BikeDetails />}
+          {tab === "reserve" && <ReserveAlert />}
+          {tab === "pump" && <PetrolPump />}
+          {tab === "mileage" && <Mileage />}
+          {tab === "summary" && <Summary />}
         </>
       )}
 

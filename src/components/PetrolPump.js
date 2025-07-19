@@ -1,81 +1,142 @@
 import React, { useState, useEffect } from "react";
 
 const PetrolPump = () => {
-  const [entry, setEntry] = useState({
-    bike: "",
-    rate: "",
-    amount: "",
-    kms: ""
-  });
-  const [logs, setLogs] = useState([]);
+  const [bike, setBike] = useState("");
+  const [rate, setRate] = useState("");
+  const [amount, setAmount] = useState("");
+  const [km, setKm] = useState("");
+  const [log, setLog] = useState([]);
+  const [bikes, setBikes] = useState([]);
 
   useEffect(() => {
-    const stored = JSON.parse(localStorage.getItem("petrolLogs")) || [];
-    setLogs(stored);
+    const saved = JSON.parse(localStorage.getItem("petrolLogs")) || [];
+    setLog(saved);
+    const bikeList = JSON.parse(localStorage.getItem("bikes")) || [];
+    setBikes(bikeList);
   }, []);
 
-  const handleChange = (e) => {
-    setEntry({ ...entry, [e.target.name]: e.target.value });
+  const handleSave = () => {
+    if (!bike || !rate || !amount || !km) {
+      alert("Please fill all fields");
+      return;
+    }
+
+    const litres = (parseFloat(amount) / parseFloat(rate)).toFixed(2);
+    const entry = {
+      date: new Date().toLocaleString(),
+      bike,
+      rate,
+      amount,
+      litres,
+      km,
+    };
+
+    const updatedLog = [...log, entry];
+    localStorage.setItem("petrolLogs", JSON.stringify(updatedLog));
+    setLog(updatedLog);
+
+    const mileage = JSON.parse(localStorage.getItem("mileageConstants")) || {};
+    mileage.lastPetrol = {
+      km: entry.km,
+      litres: litres,
+    };
+    localStorage.setItem("mileageConstants", JSON.stringify(mileage));
+
+    setBike("");
+    setRate("");
+    setAmount("");
+    setKm("");
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    const litres = (Number(entry.amount) / Number(entry.rate)).toFixed(2);
-    const newLog = { ...entry, litres, date: new Date().toLocaleString() };
-    const updatedLogs = [newLog, ...logs];
-    setLogs(updatedLogs);
-    localStorage.setItem("petrolLogs", JSON.stringify(updatedLogs));
-    setEntry({ bike: "", rate: "", amount: "", kms: "" });
-    alert("🛢️ Petrol log saved!");
-  };
-
-  const getTotalAmount = () => logs.reduce((sum, l) => sum + Number(l.amount), 0);
+  const totalAmount = log.reduce((acc, curr) => acc + parseFloat(curr.amount), 0);
 
   return (
-    <div style={{ padding: 20 }}>
-      <h2>⛽ Petrol Pump</h2>
-      <form onSubmit={handleSubmit} style={styles.form}>
-        <input name="bike" placeholder="Bike Name" value={entry.bike} onChange={handleChange} required />
-        <input name="rate" type="number" placeholder="Rate ₹" value={entry.rate} onChange={handleChange} required />
-        <input name="amount" type="number" placeholder="Amount ₹" value={entry.amount} onChange={handleChange} required />
-        <input name="kms" type="number" placeholder="Current KM" value={entry.kms} onChange={handleChange} required />
-        <button type="submit">Save</button>
-      </form>
+    <div style={{ padding: "20px" }}>
+      <h3>⛽ Petrol Pump Log</h3>
 
-      <h3 style={{ marginTop: 20 }}>📜 Petrol Log</h3>
-      <table style={styles.table}>
-        <thead>
-          <tr>
-            <th>Date</th>
-            <th>Bike</th>
-            <th>₹ Rate</th>
-            <th>₹ Amount</th>
-            <th>Litres</th>
-            <th>KM</th>
-          </tr>
-        </thead>
-        <tbody>
-          {logs.map((log, index) => (
-            <tr key={index}>
-              <td>{log.date}</td>
-              <td>{log.bike}</td>
-              <td>{log.rate}</td>
-              <td>{log.amount}</td>
-              <td>{log.litres}</td>
-              <td>{log.kms}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+      <select
+        value={bike}
+        onChange={(e) => setBike(e.target.value)}
+        style={{ marginBottom: 10 }}
+      >
+        <option value="">Select Bike</option>
+        {bikes.map((b, i) => (
+          <option key={i} value={b.name}>
+            {b.name}
+          </option>
+        ))}
+      </select>
+      <br />
 
-      <p><strong>Total ₹:</strong> {getTotalAmount()}</p>
+      <input
+        type="number"
+        placeholder="Petrol Rate ₹"
+        value={rate}
+        onChange={(e) => setRate(e.target.value)}
+        style={{ marginBottom: 10 }}
+      />
+      <br />
+
+      <input
+        type="number"
+        placeholder="Amount ₹"
+        value={amount}
+        onChange={(e) => setAmount(e.target.value)}
+        style={{ marginBottom: 10 }}
+      />
+      <br />
+
+      <input
+        type="number"
+        placeholder="Current KM in Meter"
+        value={km}
+        onChange={(e) => setKm(e.target.value)}
+        style={{ marginBottom: 10 }}
+      />
+      <br />
+
+      <button onClick={handleSave} style={{ marginTop: 10 }}>
+        Save
+      </button>
+
+      <h4 style={{ marginTop: 20 }}>📋 Petrol Fill Log</h4>
+      {log.length > 0 ? (
+        <>
+          <table border="1" cellPadding="6" style={{ borderCollapse: "collapse" }}>
+            <thead>
+              <tr>
+                <th>S.No</th>
+                <th>Date</th>
+                <th>Bike</th>
+                <th>Rate ₹</th>
+                <th>Amount ₹</th>
+                <th>Litres</th>
+                <th>KM</th>
+              </tr>
+            </thead>
+            <tbody>
+              {log.map((entry, index) => (
+                <tr key={index}>
+                  <td>{index + 1}</td>
+                  <td>{entry.date}</td>
+                  <td>{entry.bike}</td>
+                  <td>{entry.rate}</td>
+                  <td>{entry.amount}</td>
+                  <td>{entry.litres}</td>
+                  <td>{entry.km}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+          <p style={{ marginTop: 10 }}>
+            <strong>💰 Total Petrol ₹:</strong> ₹{totalAmount.toFixed(2)}
+          </p>
+        </>
+      ) : (
+        <p>📭 No petrol fill logs found.</p>
+      )}
     </div>
   );
-};
-
-const styles = {
-  form: { display: "flex", flexDirection: "column", gap: 10, maxWidth: 500, margin: "auto" },
-  table: { width: "100%", marginTop: 10, borderCollapse: "collapse" },
 };
 
 export default PetrolPump;
