@@ -1,99 +1,32 @@
-// src/components/Dashboard.js
 import React from "react";
-import Profile from "./Profile";
-import AddBike from "./AddBike";
-import BikeDetails from "./BikeDetails";
-import ReserveAlert from "./ReserveAlert";
-import PetrolPump from "./PetrolPump";
-import Mileage from "./Mileage";
-import Summary from "./Summary";
-import Instructions from "./Instructions";
 
-const Dashboard = () => {
-  const handleLogout = () => {
-    localStorage.removeItem("user");
-    window.location.reload();
-  };
-
-  const sectionStyle = {
-    border: "1px solid #ccc",
-    borderRadius: "12px",
-    padding: "16px",
-    marginBottom: "24px",
-    backgroundColor: "#f9f9f9",
-    boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
-  };
+const Dashboard = ({ tab, setTab, onLogout }) => {
+  const tabStyle = (key) => ({
+    padding: "8px 12px",
+    marginRight: 10,
+    cursor: "pointer",
+    borderBottom: tab === key ? "2px solid blue" : "none",
+    fontWeight: tab === key ? "bold" : "normal",
+    background: "#eee",
+    borderRadius: "5px",
+  });
 
   return (
-    <div style={{ maxWidth: "960px", margin: "0 auto", padding: "30px" }}>
-      <h1 style={{ textAlign: "center", marginBottom: "40px" }}>
-        🛵 Petrol Expense Monitor Dashboard
-      </h1>
-
-      {/* Profile Tab */}
-      <div style={sectionStyle}>
-        <h2 style={{ marginBottom: "16px" }}>👤 Profile</h2>
-        <Profile />
+    <div>
+      <div style={{ textAlign: "right" }}>
+        <button onClick={onLogout}>🚪 Log Out</button>
       </div>
 
-      {/* Add Bike Tab */}
-      <div style={sectionStyle}>
-        <h2 style={{ marginBottom: "16px" }}>➕ Add Bike</h2>
-        <AddBike />
-      </div>
+      <h2>🏍️ Petrol Expense Monitor Dashboard</h2>
 
-      {/* Bike Details Tab */}
-      <div style={sectionStyle}>
-        <h2 style={{ marginBottom: "16px" }}>📋 Bike Details</h2>
-        <BikeDetails />
-      </div>
-
-      {/* Reserve Alert Tab */}
-      <div style={sectionStyle}>
-        <h2 style={{ marginBottom: "16px" }}>⛽ Reserve Alert</h2>
-        <ReserveAlert />
-      </div>
-
-      {/* Petrol Pump Tab */}
-      <div style={sectionStyle}>
-        <h2 style={{ marginBottom: "16px" }}>🛢️ Petrol Log</h2>
-        <PetrolPump />
-      </div>
-
-      {/* Mileage Tab */}
-      <div style={sectionStyle}>
-        <h2 style={{ marginBottom: "16px" }}>📊 Mileage Report</h2>
-        <Mileage />
-      </div>
-
-      {/* Summary Tab */}
-      <div style={sectionStyle}>
-        <h2 style={{ marginBottom: "16px" }}>📈 Summary</h2>
-        <Summary />
-      </div>
-
-      {/* Instructions Tab */}
-      <div style={sectionStyle}>
-        <h2 style={{ marginBottom: "16px" }}>📘 Instructions</h2>
-        <Instructions />
-      </div>
-
-      {/* Logout Button */}
-      <div style={{ textAlign: "center", marginTop: "30px" }}>
-        <button
-          onClick={handleLogout}
-          style={{
-            backgroundColor: "#ff4d4d",
-            color: "#fff",
-            padding: "10px 30px",
-            borderRadius: "8px",
-            border: "none",
-            fontSize: "16px",
-            cursor: "pointer",
-          }}
-        >
-          🚪 Logout
-        </button>
+      <div style={{ display: "flex", flexWrap: "wrap", marginBottom: 20 }}>
+        <div style={tabStyle("profile")} onClick={() => setTab("profile")}>👤 Profile</div>
+        <div style={tabStyle("addBike")} onClick={() => setTab("addBike")}>➕ Add Bike</div>
+        <div style={tabStyle("bikeDetails")} onClick={() => setTab("bikeDetails")}>📋 Bike Details</div>
+        <div style={tabStyle("reserve")} onClick={() => setTab("reserve")}>🔔 Reserve Alert</div>
+        <div style={tabStyle("pump")} onClick={() => setTab("pump")}>⛽ Petrol Pump</div>
+        <div style={tabStyle("mileage")} onClick={() => setTab("mileage")}>📊 Mileage</div>
+        <div style={tabStyle("summary")} onClick={() => setTab("summary")}>📈 Summary</div>
       </div>
     </div>
   );
