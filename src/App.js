@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from "react";
+import Signup from "./components/Signup.js";
+import Signin from "./components/Signin.js";
+import Dashboard from "./components/Dashboard.js";
 
-import Signup from "./components/Signup";
-import Signin from "./components/Signin";
-import Dashboard from "./components/Dashboard";
 const App = () => {
   const [user, setUser] = useState(null);
   const [screen, setScreen] = useState("signin");
