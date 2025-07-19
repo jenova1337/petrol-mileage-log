@@ -1,75 +1,53 @@
-// src/App.js
-import React, { useState, useEffect } from "react";
-import Signup from "./components/Signup";
-import Signin from "./components/Signin";
-import Profile from "./components/Profile";
-import AddBike from "./components/AddBike";
-import BikeDetails from "./components/BikeDetails";
-import ReserveAlert from "./components/ReserveAlert";
-import PetrolPump from "./components/PetrolPump";
-import Mileage from "./components/Mileage";
-import Summary from "./components/Summary";
-import Instructions from "./components/Instructions";
+import React from "react";
+import Profile from "./Profile";
+import Instructions from "./Instructions";
+import AddBike from "./AddBike";
+import BikeDetails from "./BikeDetails";
+import ReserveAlert from "./ReserveAlert";
+import PetrolPump from "./PetrolPump";
+import Mileage from "./Mileage";
+import Summary from "./Summary";
 
-const App = () => {
-  const [user, setUser] = useState(null);
-  const [screen, setScreen] = useState("signin");
-
-  useEffect(() => {
-    const savedUser = JSON.parse(localStorage.getItem("user"));
-    if (savedUser) {
-      setUser(savedUser);
-      setScreen("dashboard");
-    }
-  }, []);
-
-  const handleSignin = (userData) => {
-    setUser(userData);
-    setScreen("dashboard");
-  };
-
-  const handleLogout = () => {
-    setUser(null);
-    setScreen("signin");
-    localStorage.removeItem("user");
-  };
-
+const Dashboard = ({ tab, setTab, onLogout, user }) => {
   const sectionStyle = {
     border: "1px solid #ccc",
     borderRadius: "12px",
     padding: "16px",
-    marginBottom: "24px",
+    marginBottom: "20px",
     backgroundColor: "#f9f9f9",
     boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
     textAlign: "left",
   };
 
   return (
-    <div style={{ fontFamily: "sans-serif", padding: "20px", maxWidth: "960px", margin: "0 auto" }}>
-      {screen === "signup" && <Signup onSignup={() => setScreen("signin")} />}
-      {screen === "signin" && <Signin onSignin={handleSignin} />}
+    <div style={{ fontFamily: "sans-serif" }}>
+      <div style={{ textAlign: "right", marginBottom: "10px" }}>
+        <button
+          onClick={onLogout}
+          style={{
+            backgroundColor: "#ff4d4d",
+            color: "#fff",
+            padding: "10px 20px",
+            borderRadius: "8px",
+            border: "none",
+          }}
+        >
+          🚪 Log Out
+        </button>
+      </div>
 
-      {screen === "dashboard" && (
-        <>
-          <div style={{ textAlign: "right" }}>
-            <button
-              onClick={handleLogout}
-              style={{
-                backgroundColor: "#ff4d4d",
-                color: "#fff",
-                padding: "10px 20px",
-                borderRadius: "8px",
-                border: "none",
-              }}
-            >
-              🚪 Log Out
-            </button>
-          </div>
+      <h1 style={{ marginBottom: "30px" }}>🏍️ Petrol Expense Monitor Dashboard</h1>
 
-          <h1 style={{ textAlign: "left", marginBottom: "30px" }}>
-            🏍️ Petrol Expense Monitor Dashboard
-          </h1>
-
+      <div
+        style={{
+          display: "flex",
+          gap: "20px",
+          alignItems: "flex-start",
+          flexWrap: "wrap",
+        }}
+      >
+        {/* Left Column: Profile & Instructions */}
+        <div style={{ flex: "1 1 300px", minWidth: "300px" }}>
           <div style={sectionStyle}>
             <h2>👤 Profile</h2>
             <Profile user={user} />
@@ -79,7 +57,10 @@ const App = () => {
             <h2>📘 Instructions</h2>
             <Instructions />
           </div>
+        </div>
 
+        {/* Right Column: Rest of the sections */}
+        <div style={{ flex: "2 1 600px", minWidth: "600px" }}>
           <div style={sectionStyle}>
             <h2>➕ Add Bike</h2>
             <AddBike />
@@ -109,27 +90,10 @@ const App = () => {
             <h2>📈 Summary</h2>
             <Summary />
           </div>
-        </>
-      )}
-
-      {/* Signup / Signin Footer */}
-      {screen !== "dashboard" && (
-        <div style={{ textAlign: "center", marginTop: 20 }}>
-          {screen === "signin" ? (
-            <p>
-              Don't have an account?{" "}
-              <button onClick={() => setScreen("signup")}>Sign Up</button>
-            </p>
-          ) : (
-            <p>
-              Already have an account?{" "}
-              <button onClick={() => setScreen("signin")}>Sign In</button>
-            </p>
-          )}
         </div>
-      )}
+      </div>
     </div>
   );
 };
 
-export default App;
+export default Dashboard;

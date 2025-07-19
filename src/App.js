@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from "react";
-import Signup from "./components/Signup.js";
-import Signin from "./components/Signin.js";
-import Dashboard from "./components/Dashboard.js";
+import Signup from "./components/Signup";
+import Signin from "./components/Signin";
+import Dashboard from "./components/Dashboard";
 
 const App = () => {
   const [user, setUser] = useState(null);
   const [screen, setScreen] = useState("signin");
-  const [tab, setTab] = useState("profile");
+  const [tab, setTab] = useState("profile"); // Optional if you use tab switching
 
   useEffect(() => {
     const savedUser = JSON.parse(localStorage.getItem("user"));
@@ -29,7 +29,7 @@ const App = () => {
 
   return (
     <div style={{ fontFamily: "sans-serif", padding: "20px" }}>
-      {/* Signup & Signin Screens */}
+      {/* Sign Up / Sign In */}
       {screen === "signup" && <Signup onSignup={() => setScreen("signin")} />}
       {screen === "signin" && <Signin onSignin={handleSignin} />}
 
@@ -43,7 +43,7 @@ const App = () => {
         />
       )}
 
-      {/* Navigation between signin/signup */}
+      {/* Sign in/up toggle footer */}
       {screen !== "dashboard" && (
         <div style={{ textAlign: "center", marginTop: 20 }}>
           {screen === "signin" ? (
