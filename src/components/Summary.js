@@ -57,11 +57,6 @@ const Summary = () => {
   };
 
   const downloadSummaryPDF = () => {
-    if (data.length === 0) {
-      alert("No summary data to export.");
-      return;
-    }
-
     const doc = new jsPDF();
     doc.text("Petrol Usage Summary", 14, 10);
 
@@ -91,7 +86,14 @@ const Summary = () => {
       finalY = doc.autoTable.previous.finalY + 10;
     });
 
-    doc.save(`SummaryLog_${Date.now()}.pdf`);
+    // ✅ Tablet & Chrome download compatible
+    const blob = doc.output("blob");
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(blob);
+    link.download = "SummaryLog.pdf";
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
   };
 
   const bikeLogs = groupByBike();
@@ -105,7 +107,7 @@ const Summary = () => {
       {Object.entries(bikeLogs).map(([bike, logs]) => (
         <div key={bike} style={{ marginBottom: "30px" }}>
           <h3>{bike}</h3>
-          <table border="1" cellPadding="6" style={{ borderCollapse: "collapse" }}>
+          <table border="1" cellPadding="6">
             <thead>
               <tr>
                 <th>S.No</th>
@@ -132,6 +134,16 @@ const Summary = () => {
         </div>
       ))}
 
+      {/* Download button placed properly */}
+      {Object.keys(bikeLogs).length > 0 && (
+        <button
+          onClick={downloadSummaryPDF}
+          style={{ marginTop: 10, marginBottom: 20 }}
+        >
+          📄 Download Summary PDF
+        </button>
+      )}
+
       <button onClick={() => setShowSummary(!showSummary)} style={{ marginBottom: 10 }}>
         {showSummary ? "Hide" : "Show"} Weekly & Monthly Summary
       </button>
@@ -157,21 +169,6 @@ const Summary = () => {
           </ul>
         </>
       )}
-<button
-  onClick={downloadSummaryPDF}
-  type="button"
-  style={{
-    marginTop: 10,
-    padding: "10px 20px",
-    backgroundColor: "#4CAF50",
-    color: "#fff",
-    border: "none",
-    borderRadius: "5px",
-    cursor: "pointer"
-  }}
->
-  📄 Download Summary PDF
-</button>
     </div>
   );
 };

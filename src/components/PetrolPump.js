@@ -49,11 +49,6 @@ const PetrolPump = () => {
   };
 
   const downloadPDF = () => {
-    if (log.length === 0) {
-      alert("No petrol logs to download.");
-      return;
-    }
-
     const doc = new jsPDF();
     doc.text("Petrol Pump Log", 14, 10);
 
@@ -71,14 +66,19 @@ const PetrolPump = () => {
       head: [["S.No", "Date", "Bike", "Rate ₹", "Amount ₹", "Litres", "KM"]],
       body: tableData,
       startY: 20,
-      theme: "grid",
     });
 
-    // 👉 Add random value to avoid duplicate block
-    doc.save(`PetrolPumpLog_${Date.now()}.pdf`);
+    // ✅ Works on Chrome + Tablets
+    const blob = doc.output("blob");
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(blob);
+    link.download = "PetrolPumpLog.pdf";
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
   };
 
-  const totalAmount = log.reduce((acc, curr) => acc + parseFloat(curr.amount || 0), 0);
+  const totalAmount = log.reduce((acc, curr) => acc + parseFloat(curr.amount), 0);
 
   return (
     <div style={{ padding: "20px" }}>
@@ -122,8 +122,8 @@ const PetrolPump = () => {
         />
       </div>
 
-      <button onClick={handleSave} style={{ marginTop: 10, marginBottom: 20 }}>
-        💾 Save
+      <button onClick={handleSave} style={{ marginTop: 10 }}>
+        Save
       </button>
 
       <h4 style={{ marginTop: 20 }}>📋 Petrol Fill Log</h4>
@@ -156,25 +156,14 @@ const PetrolPump = () => {
               ))}
             </tbody>
           </table>
-
-          <p style={{ marginTop: 10 }}>
+          <p style={{ marginTop: "10px" }}>
             <strong>💰 Total Petrol ₹:</strong> ₹{totalAmount.toFixed(2)}
           </p>
-<button
-  onClick={downloadPDF}
-  type="button"
-  style={{
-    marginTop: 10,
-    padding: "10px 20px",
-    backgroundColor: "#2196F3",
-    color: "#fff",
-    border: "none",
-    borderRadius: "5px",
-    cursor: "pointer"
-  }}
->
-  📄 Download Petrol Log PDF
-</button>
+
+          {/* ✅ Place download button after log table */}
+          <button onClick={downloadPDF} style={{ marginTop: "10px" }}>
+            📄 Download Petrol Log PDF
+          </button>
         </>
       ) : (
         <p>📭 No petrol fill logs found.</p>
