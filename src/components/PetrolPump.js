@@ -67,7 +67,9 @@ const PetrolPump = () => {
       startY: 20,
     });
 
-    doc.save("PetrolPumpLog.pdf");
+    setTimeout(() => {
+      doc.save("PetrolPumpLog.pdf");
+    }, 100);
   };
 
   const totalAmount = log.reduce((acc, curr) => acc + parseFloat(curr.amount), 0);
@@ -76,49 +78,53 @@ const PetrolPump = () => {
     <div style={{ padding: "20px" }}>
       <h3>⛽ Petrol Pump Log</h3>
 
-      <select value={bike} onChange={(e) => setBike(e.target.value)}>
-        <option value="">Select Bike</option>
-        {bikes.map((b, i) => (
-          <option key={i} value={b.name}>
-            {b.name}
-          </option>
-        ))}
-      </select>
-      <br />
+      <div style={{ marginBottom: 10 }}>
+        <select value={bike} onChange={(e) => setBike(e.target.value)}>
+          <option value="">Select Bike</option>
+          {bikes.map((b, i) => (
+            <option key={i} value={b.name}>
+              {b.name}
+            </option>
+          ))}
+        </select>
+      </div>
 
-      <input
-        type="number"
-        placeholder="Petrol Rate ₹"
-        value={rate}
-        onChange={(e) => setRate(e.target.value)}
-      />
-      <br />
+      <div style={{ marginBottom: 10 }}>
+        <input
+          type="number"
+          placeholder="Petrol Rate ₹"
+          value={rate}
+          onChange={(e) => setRate(e.target.value)}
+        />
+      </div>
 
-      <input
-        type="number"
-        placeholder="Amount ₹"
-        value={amount}
-        onChange={(e) => setAmount(e.target.value)}
-      />
-      <br />
+      <div style={{ marginBottom: 10 }}>
+        <input
+          type="number"
+          placeholder="Amount ₹"
+          value={amount}
+          onChange={(e) => setAmount(e.target.value)}
+        />
+      </div>
 
-      <input
-        type="number"
-        placeholder="Current KM in Meter"
-        value={km}
-        onChange={(e) => setKm(e.target.value)}
-      />
-      <br />
+      <div style={{ marginBottom: 10 }}>
+        <input
+          type="number"
+          placeholder="Current KM in Meter"
+          value={km}
+          onChange={(e) => setKm(e.target.value)}
+        />
+      </div>
 
-      <button onClick={handleSave} style={{ marginTop: 10 }}>
+      <button onClick={handleSave} style={{ marginBottom: 20 }}>
         Save
       </button>
 
-      <h4 style={{ marginTop: 20 }}>📋 Petrol Fill Log</h4>
+      <h4>📋 Petrol Fill Log</h4>
 
       {log.length > 0 ? (
         <>
-          <table border="1" cellPadding="6" style={{ borderCollapse: "collapse" }}>
+          <table border="1" cellPadding="6" style={{ borderCollapse: "collapse", width: "100%" }}>
             <thead>
               <tr>
                 <th>S.No</th>
@@ -144,10 +150,14 @@ const PetrolPump = () => {
               ))}
             </tbody>
           </table>
-          <p>
+
+          <p style={{ marginTop: 10 }}>
             <strong>💰 Total Petrol ₹:</strong> ₹{totalAmount.toFixed(2)}
           </p>
-          <button onClick={downloadPDF}>📄 Download Petrol Log PDF</button>
+
+          <button onClick={downloadPDF} style={{ marginTop: 10 }}>
+            📄 Download Petrol Log PDF
+          </button>
         </>
       ) : (
         <p>📭 No petrol fill logs found.</p>

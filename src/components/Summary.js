@@ -85,7 +85,9 @@ const Summary = () => {
       finalY = doc.autoTable.previous.finalY + 10;
     });
 
-    doc.save("SummaryLog.pdf");
+    setTimeout(() => {
+      doc.save("SummaryLog.pdf");
+    }, 100);
   };
 
   const bikeLogs = groupByBike();
@@ -99,7 +101,7 @@ const Summary = () => {
       {Object.entries(bikeLogs).map(([bike, logs]) => (
         <div key={bike} style={{ marginBottom: "30px" }}>
           <h3>{bike}</h3>
-          <table border="1" cellPadding="6">
+          <table border="1" cellPadding="6" style={{ width: "100%" }}>
             <thead>
               <tr>
                 <th>S.No</th>
