@@ -157,20 +157,21 @@ const Summary = () => {
           </ul>
         </>
       )}
-
-      <button
-        onClick={downloadSummaryPDF}
-        style={{
-          marginTop: 20,
-          padding: "10px 20px",
-          backgroundColor: "#28a745",
-          color: "white",
-          border: "none",
-          borderRadius: "6px",
-        }}
-      >
-        📄 Download Summary PDF
-      </button>
+<button
+  onClick={downloadSummaryPDF}
+  type="button"
+  style={{
+    marginTop: 10,
+    padding: "10px 20px",
+    backgroundColor: "#4CAF50",
+    color: "#fff",
+    border: "none",
+    borderRadius: "5px",
+    cursor: "pointer"
+  }}
+>
+  📄 Download Summary PDF
+</button>
     </div>
   );
 };

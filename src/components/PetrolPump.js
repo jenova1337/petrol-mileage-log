@@ -160,20 +160,21 @@ const PetrolPump = () => {
           <p style={{ marginTop: 10 }}>
             <strong>💰 Total Petrol ₹:</strong> ₹{totalAmount.toFixed(2)}
           </p>
-
-          <button
-            onClick={downloadPDF}
-            style={{
-              marginTop: 15,
-              padding: "10px 20px",
-              backgroundColor: "#007bff",
-              color: "white",
-              border: "none",
-              borderRadius: "6px",
-            }}
-          >
-            📄 Download Petrol Log PDF
-          </button>
+<button
+  onClick={downloadPDF}
+  type="button"
+  style={{
+    marginTop: 10,
+    padding: "10px 20px",
+    backgroundColor: "#2196F3",
+    color: "#fff",
+    border: "none",
+    borderRadius: "5px",
+    cursor: "pointer"
+  }}
+>
+  📄 Download Petrol Log PDF
+</button>
         </>
       ) : (
         <p>📭 No petrol fill logs found.</p>
