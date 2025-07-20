@@ -1,3 +1,4 @@
+// src/components/Summary.js
 import React, { useEffect, useState } from "react";
 import jsPDF from "jspdf";
 import "jspdf-autotable";
@@ -56,6 +57,11 @@ const Summary = () => {
   };
 
   const downloadSummaryPDF = () => {
+    if (data.length === 0) {
+      alert("No summary data to export.");
+      return;
+    }
+
     const doc = new jsPDF();
     doc.text("Petrol Usage Summary", 14, 10);
 
@@ -85,9 +91,7 @@ const Summary = () => {
       finalY = doc.autoTable.previous.finalY + 10;
     });
 
-    setTimeout(() => {
-      doc.save("SummaryLog.pdf");
-    }, 100);
+    doc.save(`SummaryLog_${Date.now()}.pdf`);
   };
 
   const bikeLogs = groupByBike();
@@ -101,7 +105,7 @@ const Summary = () => {
       {Object.entries(bikeLogs).map(([bike, logs]) => (
         <div key={bike} style={{ marginBottom: "30px" }}>
           <h3>{bike}</h3>
-          <table border="1" cellPadding="6" style={{ width: "100%" }}>
+          <table border="1" cellPadding="6" style={{ borderCollapse: "collapse" }}>
             <thead>
               <tr>
                 <th>S.No</th>
@@ -128,7 +132,7 @@ const Summary = () => {
         </div>
       ))}
 
-      <button onClick={() => setShowSummary(!showSummary)} style={{ marginTop: 10 }}>
+      <button onClick={() => setShowSummary(!showSummary)} style={{ marginBottom: 10 }}>
         {showSummary ? "Hide" : "Show"} Weekly & Monthly Summary
       </button>
 
@@ -154,7 +158,17 @@ const Summary = () => {
         </>
       )}
 
-      <button onClick={downloadSummaryPDF} style={{ marginTop: 10 }}>
+      <button
+        onClick={downloadSummaryPDF}
+        style={{
+          marginTop: 20,
+          padding: "10px 20px",
+          backgroundColor: "#28a745",
+          color: "white",
+          border: "none",
+          borderRadius: "6px",
+        }}
+      >
         📄 Download Summary PDF
       </button>
     </div>

@@ -1,3 +1,4 @@
+// src/components/PetrolPump.js
 import React, { useState, useEffect } from "react";
 import jsPDF from "jspdf";
 import "jspdf-autotable";
@@ -48,6 +49,11 @@ const PetrolPump = () => {
   };
 
   const downloadPDF = () => {
+    if (log.length === 0) {
+      alert("No petrol logs to download.");
+      return;
+    }
+
     const doc = new jsPDF();
     doc.text("Petrol Pump Log", 14, 10);
 
@@ -65,20 +71,20 @@ const PetrolPump = () => {
       head: [["S.No", "Date", "Bike", "Rate ₹", "Amount ₹", "Litres", "KM"]],
       body: tableData,
       startY: 20,
+      theme: "grid",
     });
 
-    setTimeout(() => {
-      doc.save("PetrolPumpLog.pdf");
-    }, 100);
+    // 👉 Add random value to avoid duplicate block
+    doc.save(`PetrolPumpLog_${Date.now()}.pdf`);
   };
 
-  const totalAmount = log.reduce((acc, curr) => acc + parseFloat(curr.amount), 0);
+  const totalAmount = log.reduce((acc, curr) => acc + parseFloat(curr.amount || 0), 0);
 
   return (
     <div style={{ padding: "20px" }}>
       <h3>⛽ Petrol Pump Log</h3>
 
-      <div style={{ marginBottom: 10 }}>
+      <div style={{ marginBottom: "10px" }}>
         <select value={bike} onChange={(e) => setBike(e.target.value)}>
           <option value="">Select Bike</option>
           {bikes.map((b, i) => (
@@ -89,7 +95,7 @@ const PetrolPump = () => {
         </select>
       </div>
 
-      <div style={{ marginBottom: 10 }}>
+      <div style={{ marginBottom: "10px" }}>
         <input
           type="number"
           placeholder="Petrol Rate ₹"
@@ -98,7 +104,7 @@ const PetrolPump = () => {
         />
       </div>
 
-      <div style={{ marginBottom: 10 }}>
+      <div style={{ marginBottom: "10px" }}>
         <input
           type="number"
           placeholder="Amount ₹"
@@ -107,7 +113,7 @@ const PetrolPump = () => {
         />
       </div>
 
-      <div style={{ marginBottom: 10 }}>
+      <div style={{ marginBottom: "10px" }}>
         <input
           type="number"
           placeholder="Current KM in Meter"
@@ -116,15 +122,15 @@ const PetrolPump = () => {
         />
       </div>
 
-      <button onClick={handleSave} style={{ marginBottom: 20 }}>
-        Save
+      <button onClick={handleSave} style={{ marginTop: 10, marginBottom: 20 }}>
+        💾 Save
       </button>
 
-      <h4>📋 Petrol Fill Log</h4>
+      <h4 style={{ marginTop: 20 }}>📋 Petrol Fill Log</h4>
 
       {log.length > 0 ? (
         <>
-          <table border="1" cellPadding="6" style={{ borderCollapse: "collapse", width: "100%" }}>
+          <table border="1" cellPadding="6" style={{ borderCollapse: "collapse" }}>
             <thead>
               <tr>
                 <th>S.No</th>
@@ -155,7 +161,17 @@ const PetrolPump = () => {
             <strong>💰 Total Petrol ₹:</strong> ₹{totalAmount.toFixed(2)}
           </p>
 
-          <button onClick={downloadPDF} style={{ marginTop: 10 }}>
+          <button
+            onClick={downloadPDF}
+            style={{
+              marginTop: 15,
+              padding: "10px 20px",
+              backgroundColor: "#007bff",
+              color: "white",
+              border: "none",
+              borderRadius: "6px",
+            }}
+          >
             📄 Download Petrol Log PDF
           </button>
         </>
