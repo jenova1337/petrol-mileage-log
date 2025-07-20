@@ -1,4 +1,3 @@
-// src/components/Signup.js
 import React, { useState } from "react";
 import { createUserWithEmailAndPassword, getAuth } from "firebase/auth";
 import { doc, setDoc } from "firebase/firestore";
@@ -19,22 +18,31 @@ const Signup = ({ onSignup }) => {
   };
 
   const handleSignup = async () => {
+    const auth = getAuth();
+    const trimmedMobile = form.mobile.trim();
+    const email = `${trimmedMobile}@mileage.com`;
+
     try {
-      const auth = getAuth();
-      const trimmedMobile = form.mobile.trim();
-      const email = `${trimmedMobile}@mileage.com`;
+      console.log("⏳ Creating user with email:", email);
       const userCredential = await createUserWithEmailAndPassword(auth, email, form.password);
       const uid = userCredential.user.uid;
+      console.log("✅ Firebase Auth created with UID:", uid);
 
+      console.log("⏳ Writing user profile to Firestore...");
       await setDoc(doc(db, "users", uid), {
         ...form,
         uid,
+        email,
+        createdAt: new Date().toISOString(),
       });
+      console.log("✅ Profile written to Firestore!");
 
-      alert(`✅ Signup successful!\nUsed Email: ${email}`);
+      alert(`✅ Signup successful!\nFake Email: ${email}`);
       onSignup();
+
     } catch (error) {
-      alert("Signup error: " + error.message);
+      console.error("🔥 Signup error:", error);
+      alert("Signup failed: " + error.message);
     }
   };
 
