@@ -1,110 +1,88 @@
 import React, { useState, useEffect } from "react";
+import { collection, addDoc, getDocs } from "firebase/firestore";
+import db from "../firebase";
+import { useAuth } from "../auth/useAuth";
 
 const ReserveAlert = () => {
-  const [reserveKm, setReserveKm] = useState("");
-  const [alertTime, setAlertTime] = useState("6");
+  const { user } = useAuth();
+  const [reserveKM, setReserveKM] = useState("");
   const [logs, setLogs] = useState([]);
 
   useEffect(() => {
-    const savedLogs = JSON.parse(localStorage.getItem("reserveLogs")) || [];
-    setLogs(savedLogs);
-  }, []);
+    if (user) fetchReserves();
+  }, [user]);
 
-  const handleSave = () => {
-    const newEntry = {
+  const fetchReserves = async () => {
+    const snapshot = await getDocs(collection(db, "users", user.uid, "reserves"));
+    const items = [];
+    snapshot.forEach((doc) => items.push(doc.data()));
+    setLogs(items);
+  };
+
+  const handleSave = async () => {
+    if (!reserveKM) return alert("Please enter KM");
+
+    const entry = {
+      km: reserveKM,
       date: new Date().toLocaleString(),
-      km: reserveKm,
     };
 
-    const updated = [...logs, newEntry];
-    localStorage.setItem("reserveLogs", JSON.stringify(updated));
-    localStorage.setItem("alertTime", alertTime);
-
-    const mileage = JSON.parse(localStorage.getItem("mileageConstants")) || {};
-
-    if (mileage.lastReserve && mileage.lastPetrol) {
-      mileage.lastReserveAfter = newEntry;
-      const before = mileage.lastReserve;
-      const petrol = mileage.lastPetrol;
-      const after = newEntry;
-      const distance = parseFloat(after.km) - parseFloat(before.km);
-      const mileageValue =
-        petrol.litres > 0 && distance > 0
-          ? (distance / petrol.litres).toFixed(2)
-          : "N/A";
-
-      const newLog = {
-        beforeReserveKm: before.km,
-        petrolLitres: petrol.litres,
-        afterReserveKm: after.km,
-        mileage: mileageValue,
-        date: new Date().toLocaleString(),
-      };
-
-      const logs = JSON.parse(localStorage.getItem("mileageLogs")) || [];
-      localStorage.setItem("mileageLogs", JSON.stringify([...logs, newLog]));
+    try {
+      await addDoc(collection(db, "users", user.uid, "reserves"), entry);
+      setLogs((prev) => [...prev, entry]);
+      setReserveKM("");
+    } catch (err) {
+      console.error("Error saving reserve:", err);
     }
-
-    mileage.lastReserve = newEntry;
-    delete mileage.lastPetrol;
-    delete mileage.lastReserveAfter;
-
-    localStorage.setItem("mileageConstants", JSON.stringify(mileage));
-    setLogs(updated);
-    alert("✅ Reserve alert saved!");
-    setReserveKm("");
   };
 
   return (
-    <div style={{ padding: 20 }}>
-      <h3>🔔 Reserve Details & Alert</h3>
-
+    <div
+      style={{
+        padding: "20px",
+        backgroundColor: "#fff8e1",
+        border: "2px solid #ffcc80",
+        borderRadius: "10px",
+        maxWidth: "700px",
+        margin: "auto",
+      }}
+    >
+      <button onClick={() => window.location.reload()} style={{ marginBottom: "10px" }}>
+        🔙 Back to Dashboard
+      </button>
+      <h3>🔔 Reserve Alert</h3>
       <input
         type="number"
-        placeholder="Reserve Kilometers"
-        value={reserveKm}
-        onChange={(e) => setReserveKm(e.target.value)}
-        style={{ marginBottom: 10 }}
+        placeholder="Enter Reserve KM"
+        value={reserveKM}
+        onChange={(e) => setReserveKM(e.target.value)}
+        style={{ marginBottom: "10px", display: "block", padding: "6px" }}
       />
+      <button onClick={handleSave}>Save</button>
 
-      <br />
-
-      <label>Alert me after: </label>
-      <select
-        value={alertTime}
-        onChange={(e) => setAlertTime(e.target.value)}
-        style={{ marginBottom: 10 }}
-      >
-        <option value="6">6 hrs</option>
-        <option value="12">12 hrs</option>
-        <option value="24">24 hrs</option>
-      </select>
-
-      <br />
-
-      <button style={{ marginTop: 10 }} onClick={handleSave}>
-        Save Reserve Alert
-      </button>
-
-      <h4 style={{ marginTop: 20 }}>📋 Reserve Log</h4>
-      <table border="1" cellPadding="5">
-        <thead>
-          <tr>
-            <th>S.No</th>
-            <th>Date</th>
-            <th>Reserve KM</th>
-          </tr>
-        </thead>
-        <tbody>
-          {logs.map((log, index) => (
-            <tr key={index}>
-              <td>{index + 1}</td>
-              <td>{log.date}</td>
-              <td>{log.km}</td>
+      <h4 style={{ marginTop: 20 }}>📋 Reserve Entries</h4>
+      {logs.length > 0 ? (
+        <table border="1" cellPadding="6" style={{ borderCollapse: "collapse" }}>
+          <thead>
+            <tr>
+              <th>S.No</th>
+              <th>Date</th>
+              <th>KM</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {logs.map((entry, idx) => (
+              <tr key={idx}>
+                <td>{idx + 1}</td>
+                <td>{entry.date}</td>
+                <td>{entry.km}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      ) : (
+        <p>📭 No reserve logs yet.</p>
+      )}
     </div>
   );
 };

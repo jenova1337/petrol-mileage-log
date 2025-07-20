@@ -1,61 +1,42 @@
+// src/App.js
 import React, { useState, useEffect } from "react";
 import Signup from "./components/Signup";
 import Signin from "./components/Signin";
 import Dashboard from "./components/Dashboard";
+import { getAuth, signOut } from "firebase/auth";
+import useAuth from "./auth/useAuth";
 
 const App = () => {
-  const [user, setUser] = useState(null);
+  const firebaseUser = useAuth();
   const [screen, setScreen] = useState("signin");
-  const [tab, setTab] = useState("profile"); // Optional if you use tab switching
+  const [tab, setTab] = useState("profile");
 
   useEffect(() => {
-    const savedUser = JSON.parse(localStorage.getItem("user"));
-    if (savedUser) {
-      setUser(savedUser);
+    if (firebaseUser) {
       setScreen("dashboard");
+    } else {
+      setScreen("signin");
     }
-  }, []);
-
-  const handleSignin = (userData) => {
-    setUser(userData);
-    setScreen("dashboard");
-  };
+  }, [firebaseUser]);
 
   const handleLogout = () => {
-    setUser(null);
+    signOut(getAuth());
     setScreen("signin");
-    localStorage.removeItem("user");
   };
 
   return (
     <div style={{ fontFamily: "sans-serif", padding: "20px" }}>
-      {/* Sign Up / Sign In */}
       {screen === "signup" && <Signup onSignup={() => setScreen("signin")} />}
-      {screen === "signin" && <Signin onSignin={handleSignin} />}
-
-      {/* Dashboard */}
+      {screen === "signin" && <Signin onSignin={() => setScreen("dashboard")} />}
       {screen === "dashboard" && (
-        <Dashboard
-          tab={tab}
-          setTab={setTab}
-          onLogout={handleLogout}
-          user={user}
-        />
+        <Dashboard tab={tab} setTab={setTab} onLogout={handleLogout} user={firebaseUser} />
       )}
-
-      {/* Sign in/up toggle footer */}
       {screen !== "dashboard" && (
         <div style={{ textAlign: "center", marginTop: 20 }}>
           {screen === "signin" ? (
-            <p>
-              Don't have an account?{" "}
-              <button onClick={() => setScreen("signup")}>Sign Up</button>
-            </p>
+            <p>Don't have an account? <button onClick={() => setScreen("signup")}>Sign Up</button></p>
           ) : (
-            <p>
-              Already have an account?{" "}
-              <button onClick={() => setScreen("signin")}>Sign In</button>
-            </p>
+            <p>Already have an account? <button onClick={() => setScreen("signin")}>Sign In</button></p>
           )}
         </div>
       )}

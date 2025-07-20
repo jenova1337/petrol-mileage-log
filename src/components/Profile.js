@@ -1,26 +1,42 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
+import { doc, getDoc } from "firebase/firestore";
+import db from "../firebase";
+import { useAuth } from "../auth/useAuth";
 
-const Profile = ({ user }) => {
-  if (!user) return null;
+const Profile = () => {
+  const { user } = useAuth();
+  const [profile, setProfile] = useState(null);
+
+  useEffect(() => {
+    const fetchProfile = async () => {
+      if (user?.uid) {
+        const docRef = doc(db, "users", user.uid);
+        const docSnap = await getDoc(docRef);
+        if (docSnap.exists()) {
+          setProfile(docSnap.data());
+        }
+      }
+    };
+    fetchProfile();
+  }, [user]);
+
+  if (!profile) return <p>Loading profile...</p>;
 
   return (
-    <div
-      style={{
-        padding: "20px",
-        backgroundColor: "#e0f7fa", // Light cyan background
-        border: "2px solid #00796b", // Teal border
-        borderRadius: "12px",
-        maxWidth: "500px",
-        margin: "auto",
-        boxShadow: "0 4px 8px rgba(0,0,0,0.1)",
-      }}
-    >
-      <h2 style={{ color: "#004d40" }}>👤 Profile</h2>
-      <p><strong>Name:</strong> {user?.name || "N/A"}</p>
-      <p><strong>Gender:</strong> {user?.gender || "N/A"}</p>
-      <p><strong>Age:</strong> {user?.age || "N/A"}</p>
-      <p><strong>Mobile:</strong> {user?.mobile || "N/A"}</p>
-      <p><strong>Total Bikes:</strong> {user?.bikeCount || 0}</p>
+    <div style={{
+      padding: "20px",
+      border: "2px solid #90caf9",
+      backgroundColor: "#e3f2fd",
+      borderRadius: "10px",
+      maxWidth: "700px",
+      margin: "auto"
+    }}>
+      <h2>👤 Profile</h2>
+      <p><strong>Name:</strong> {profile.name}</p>
+      <p><strong>Gender:</strong> {profile.gender}</p>
+      <p><strong>Age:</strong> {profile.age}</p>
+      <p><strong>Mobile:</strong> {profile.mobile}</p>
+      <p><strong>Total Bikes:</strong> {profile.bikeCount}</p>
     </div>
   );
 };

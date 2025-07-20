@@ -1,139 +1,142 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
+import { collection, addDoc, getDocs } from "firebase/firestore";
+import db from "../firebase";
+import { useAuth } from "../auth/useAuth";
 
-const AddBike = ({ onAdd }) => {
+const AddBike = () => {
+  const { user } = useAuth(); // get current user
   const [bike, setBike] = useState({
     name: "",
     model: "",
-    year: "",
-    kilometers: "",
-    purchaseDate: "",
+    km: "",
     color: "",
-    regNumber: "",
-    engineNumber: "",
-    chassisNumber: "",
+    registration: "",
+    engine: "",
+    chassis: "",
+    date: "",
   });
+  const [bikeList, setBikeList] = useState([]);
+
+  useEffect(() => {
+    if (user) fetchBikes();
+  }, [user]);
+
+  const fetchBikes = async () => {
+    const userBikesRef = collection(db, "users", user.uid, "bikes");
+    const querySnapshot = await getDocs(userBikesRef);
+    const bikes = [];
+    querySnapshot.forEach((doc) => {
+      bikes.push(doc.data());
+    });
+    setBikeList(bikes);
+  };
 
   const handleChange = (e) => {
     setBike({ ...bike, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-
-    if (!bike.name || !bike.model || !bike.year || !bike.kilometers || !bike.purchaseDate || !bike.color || !bike.regNumber) {
-      alert("❗ Please fill all required fields.");
+  const handleAddBike = async () => {
+    if (!bike.name || !bike.model || !bike.km || !bike.date) {
+      alert("Please fill required fields: Name, Model, KM, Purchase Date");
       return;
     }
 
-    let existing = JSON.parse(localStorage.getItem("bikes") || "[]");
-    existing.push(bike);
-    localStorage.setItem("bikes", JSON.stringify(existing));
-    alert("✅ Bike added!");
-
-    if (onAdd) onAdd();
-
-    // Reset form
-    setBike({
-      name: "",
-      model: "",
-      year: "",
-      kilometers: "",
-      purchaseDate: "",
-      color: "",
-      regNumber: "",
-      engineNumber: "",
-      chassisNumber: "",
-    });
-  };
-
-  const inputStyle = {
-    marginBottom: "12px",
-    padding: "10px",
-    width: "100%",
-    maxWidth: "400px",
-    fontSize: "16px",
-    borderRadius: "6px",
-    border: "1px solid #ccc",
+    try {
+      const userBikesRef = collection(db, "users", user.uid, "bikes");
+      await addDoc(userBikesRef, bike);
+      setBike({
+        name: "",
+        model: "",
+        km: "",
+        color: "",
+        registration: "",
+        engine: "",
+        chassis: "",
+        date: "",
+      });
+      fetchBikes();
+    } catch (error) {
+      console.error("Error adding bike:", error);
+    }
   };
 
   return (
-    <form onSubmit={handleSubmit} style={{ padding: "20px", display: "flex", flexDirection: "column", gap: "10px" }}>
-      <h2>➕ Add Bike</h2>
-
+    <div style={{ padding: "20px" }}>
+      <h2>🚲 Add Bike</h2>
       <input
-        style={inputStyle}
+        type="text"
         name="name"
         placeholder="Bike Name"
         value={bike.name}
         onChange={handleChange}
-        required
-      />
+      /><br />
       <input
-        style={inputStyle}
+        type="text"
         name="model"
-        placeholder="Model"
+        placeholder="Model / Year"
         value={bike.model}
         onChange={handleChange}
-        required
-      />
+      /><br />
       <input
-        style={inputStyle}
-        name="year"
-        placeholder="Year"
-        value={bike.year}
+        type="text"
+        name="km"
+        placeholder="KM Reading"
+        value={bike.km}
         onChange={handleChange}
-        required
-      />
+      /><br />
       <input
-        style={inputStyle}
-        name="kilometers"
-        placeholder="Kilometers Run"
-        value={bike.kilometers}
-        onChange={handleChange}
-        required
-      />
-      <input
-        style={inputStyle}
-        name="purchaseDate"
-        type="date"
-        value={bike.purchaseDate}
-        onChange={handleChange}
-        required
-      />
-      <input
-        style={inputStyle}
+        type="text"
         name="color"
         placeholder="Color"
         value={bike.color}
         onChange={handleChange}
-        required
-      />
+      /><br />
       <input
-        style={inputStyle}
-        name="regNumber"
-        placeholder="Reg Number"
-        value={bike.regNumber}
+        type="text"
+        name="registration"
+        placeholder="Registration No"
+        value={bike.registration}
         onChange={handleChange}
-        required
-      />
+      /><br />
       <input
-        style={inputStyle}
-        name="engineNumber"
-        placeholder="Engine Number (optional)"
-        value={bike.engineNumber}
+        type="text"
+        name="engine"
+        placeholder="Engine No (Optional)"
+        value={bike.engine}
         onChange={handleChange}
-      />
+      /><br />
       <input
-        style={inputStyle}
-        name="chassisNumber"
-        placeholder="Chassis Number (optional)"
-        value={bike.chassisNumber}
+        type="text"
+        name="chassis"
+        placeholder="Chassis No (Optional)"
+        value={bike.chassis}
         onChange={handleChange}
-      />
-      <button type="submit" style={{ padding: "10px", fontSize: "16px", borderRadius: "6px", cursor: "pointer" }}>
-        Save Bike
+      /><br />
+      <input
+        type="date"
+        name="date"
+        placeholder="Purchase Date"
+        value={bike.date}
+        onChange={handleChange}
+      /><br />
+
+      <button onClick={handleAddBike} style={{ marginTop: "10px" }}>
+        ➕ Save Bike
       </button>
-    </form>
+
+      <h4 style={{ marginTop: "20px" }}>📋 Your Bikes</h4>
+      {bikeList.length === 0 ? (
+        <p>No bikes added.</p>
+      ) : (
+        <ul>
+          {bikeList.map((b, i) => (
+            <li key={i}>
+              {b.name} – {b.model} – {b.km} KM
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
   );
 };
 

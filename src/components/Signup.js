@@ -1,4 +1,8 @@
+// src/components/Signup.js
 import React, { useState } from "react";
+import { createUserWithEmailAndPassword, getAuth } from "firebase/auth";
+import { doc, setDoc } from "firebase/firestore";
+import db from "../firebase";
 
 const Signup = ({ onSignup }) => {
   const [form, setForm] = useState({
@@ -7,39 +11,45 @@ const Signup = ({ onSignup }) => {
     age: "",
     mobile: "",
     password: "",
-    bikeCount: ""
+    bikeCount: "",
   });
 
   const handleChange = (e) => {
-    setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
+    setForm({ ...form, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    localStorage.setItem("user", JSON.stringify(form));
-    alert("Signup successful. Please login.");
-    onSignup();
+  const handleSignup = async () => {
+    try {
+      const auth = getAuth();
+      const email = `${form.mobile}@mileage.com`; // fake email using mobile
+      const userCredential = await createUserWithEmailAndPassword(auth, email, form.password);
+      const uid = userCredential.user.uid;
+
+      // Save user profile in Firestore
+      await setDoc(doc(db, "users", uid), {
+        ...form,
+        uid,
+      });
+
+      alert("Signup successful!");
+      onSignup();
+    } catch (error) {
+      alert("Signup error: " + error.message);
+    }
   };
 
   return (
-    <div style={styles.container}>
-      <h2>📝 Sign Up</h2>
-      <form onSubmit={handleSubmit} style={styles.form}>
-        <input name="name" placeholder="Name" required onChange={handleChange} />
-        <input name="gender" placeholder="Gender" required onChange={handleChange} />
-        <input name="age" type="number" placeholder="Age" required onChange={handleChange} />
-        <input name="mobile" placeholder="Mobile Number" required onChange={handleChange} />
-        <input name="password" type="password" placeholder="Password" required onChange={handleChange} />
-        <input name="bikeCount" type="number" placeholder="Number of Bikes" required onChange={handleChange} />
-        <button type="submit">Register</button>
-      </form>
+    <div style={{ padding: 20 }}>
+      <h2>📝 Signup</h2>
+      <input name="name" placeholder="Name" onChange={handleChange} /><br />
+      <input name="gender" placeholder="Gender" onChange={handleChange} /><br />
+      <input name="age" placeholder="Age" type="number" onChange={handleChange} /><br />
+      <input name="mobile" placeholder="Mobile Number" onChange={handleChange} /><br />
+      <input name="bikeCount" placeholder="Number of Bikes" type="number" onChange={handleChange} /><br />
+      <input name="password" placeholder="Password" type="password" onChange={handleChange} /><br />
+      <button onClick={handleSignup}>Create Account</button>
     </div>
   );
-};
-
-const styles = {
-  container: { padding: 20, maxWidth: 400, margin: "auto" },
-  form: { display: "flex", flexDirection: "column", gap: 10 }
 };
 
 export default Signup;

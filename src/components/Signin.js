@@ -1,48 +1,30 @@
+// src/components/Signin.js
 import React, { useState } from "react";
+import { signInWithEmailAndPassword, getAuth } from "firebase/auth";
 
 const Signin = ({ onSignin }) => {
   const [mobile, setMobile] = useState("");
   const [password, setPassword] = useState("");
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    const user = JSON.parse(localStorage.getItem("user"));
-
-    if (user && user.mobile === mobile && user.password === password) {
-      alert("Login successful!");
-      onSignin(user);
-    } else {
-      alert("Invalid mobile number or password!");
+  const handleSignin = async () => {
+    try {
+      const auth = getAuth();
+      const email = `${mobile}@mileage.com`;
+      const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      onSignin(userCredential.user);
+    } catch (error) {
+      alert("Signin failed: " + error.message);
     }
   };
 
   return (
-    <div style={styles.container}>
+    <div style={{ padding: 20 }}>
       <h2>🔐 Sign In</h2>
-      <form onSubmit={handleSubmit} style={styles.form}>
-        <input
-          type="tel"
-          placeholder="Mobile Number"
-          value={mobile}
-          onChange={(e) => setMobile(e.target.value)}
-          required
-        />
-        <input
-          type="password"
-          placeholder="Password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          required
-        />
-        <button type="submit">Login</button>
-      </form>
+      <input placeholder="Mobile" onChange={(e) => setMobile(e.target.value)} /><br />
+      <input placeholder="Password" type="password" onChange={(e) => setPassword(e.target.value)} /><br />
+      <button onClick={handleSignin}>Login</button>
     </div>
   );
-};
-
-const styles = {
-  container: { padding: 20, maxWidth: 400, margin: "auto" },
-  form: { display: "flex", flexDirection: "column", gap: 10 }
 };
 
 export default Signin;
