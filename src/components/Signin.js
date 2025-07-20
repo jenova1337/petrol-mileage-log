@@ -9,7 +9,9 @@ const Signin = ({ onSignin }) => {
   const handleSignin = async () => {
     try {
       const auth = getAuth();
-      const email = `${mobile}@mileage.com`;
+      const trimmedMobile = mobile.trim();
+      const email = `${trimmedMobile}@mileage.com`;
+      console.log("🔐 Logging in with email:", email);
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
       onSignin(userCredential.user);
     } catch (error) {

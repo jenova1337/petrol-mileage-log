@@ -21,17 +21,17 @@ const Signup = ({ onSignup }) => {
   const handleSignup = async () => {
     try {
       const auth = getAuth();
-      const email = `${form.mobile}@mileage.com`; // fake email using mobile
+      const trimmedMobile = form.mobile.trim();
+      const email = `${trimmedMobile}@mileage.com`;
       const userCredential = await createUserWithEmailAndPassword(auth, email, form.password);
       const uid = userCredential.user.uid;
 
-      // Save user profile in Firestore
       await setDoc(doc(db, "users", uid), {
         ...form,
         uid,
       });
 
-      alert("Signup successful!");
+      alert(`✅ Signup successful!\nUsed Email: ${email}`);
       onSignup();
     } catch (error) {
       alert("Signup error: " + error.message);
