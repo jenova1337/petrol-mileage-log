@@ -9,6 +9,7 @@ const BikeDetails = () => {
   }, []);
 
   const getAge = (purchaseDate) => {
+    if (!purchaseDate) return "N/A";
     const purchase = new Date(purchaseDate);
     const now = new Date();
     const diffYears = now.getFullYear() - purchase.getFullYear();
@@ -46,14 +47,14 @@ const BikeDetails = () => {
               boxShadow: "0 2px 6px rgba(0,0,0,0.05)",
             }}
           >
-            <p><strong>Bike Name:</strong> {bike.name}</p>
-            <p><strong>Model / Year:</strong> {bike.model}</p>
-            <p><strong>Color:</strong> {bike.color}</p>
-            <p><strong>KM Reading:</strong> {bike.km}</p>
+            <p><strong>Bike Name:</strong> {bike.name || "N/A"}</p>
+            <p><strong>Model / Year:</strong> {bike.model || "N/A"}</p>
+            <p><strong>Color:</strong> {bike.color || "N/A"}</p>
+            <p><strong>KM Reading:</strong> {bike.km || "N/A"}</p>
             <p><strong>Reg. Number:</strong> {bike.registration || "N/A"}</p>
             <p><strong>Engine No:</strong> {bike.engine || "N/A"}</p>
             <p><strong>Chassis No:</strong> {bike.chassis || "N/A"}</p>
-            <p><strong>Purchase Date:</strong> {bike.date}</p>
+            <p><strong>Purchase Date:</strong> {bike.date || "N/A"}</p>
             <p><strong>Bike Age:</strong> {getAge(bike.date)}</p>
           </div>
         ))
