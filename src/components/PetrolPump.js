@@ -1,7 +1,7 @@
 // src/components/PetrolPump.js
 import React, { useState, useEffect } from "react";
 import jsPDF from "jspdf";
-import "jspdf-autotable";
+import autoTable from "jspdf-autotable";
 
 const PetrolPump = () => {
   const [bike, setBike] = useState("");
@@ -39,7 +39,10 @@ const PetrolPump = () => {
     setLog(updatedLog);
 
     const mileage = JSON.parse(localStorage.getItem("mileageConstants")) || {};
-    mileage.lastPetrol = { km: entry.km, litres: litres };
+    mileage.lastPetrol = {
+      km: entry.km,
+      litres: litres,
+    };
     localStorage.setItem("mileageConstants", JSON.stringify(mileage));
 
     setBike("");
@@ -48,35 +51,40 @@ const PetrolPump = () => {
     setKm("");
   };
 
+  const totalAmount = log.reduce((acc, curr) => acc + parseFloat(curr.amount), 0);
+
   const downloadPDF = () => {
     const doc = new jsPDF();
-    doc.text("Petrol Fill Log", 14, 16);
-    const rows = log.map((entry, i) => [
-      i + 1,
-      entry.date,
-      entry.bike,
-      entry.rate,
-      entry.amount,
-      entry.litres,
-      entry.km,
-    ]);
+    doc.text("⛽ Petrol Fill Log", 14, 15);
 
-    doc.autoTable({
-      head: [["S.No", "Date", "Bike", "Rate ₹", "Amount ₹", "Litres", "KM"]],
-      body: rows,
+    autoTable(doc, {
       startY: 20,
+      head: [["S.No", "Date", "Bike", "Rate ₹", "Amount ₹", "Litres", "KM"]],
+      body: log.map((entry, index) => [
+        index + 1,
+        entry.date,
+        entry.bike,
+        entry.rate,
+        entry.amount,
+        entry.litres,
+        entry.km,
+      ]),
+      theme: "grid",
+      styles: { fontSize: 10 },
     });
 
-    doc.save("Petrol_Log.pdf");
+    doc.save("PetrolPumpLog.pdf");
   };
-
-  const totalAmount = log.reduce((acc, curr) => acc + parseFloat(curr.amount), 0);
 
   return (
     <div style={{ padding: "20px" }}>
       <h3>⛽ Petrol Pump Log</h3>
 
-      <select value={bike} onChange={(e) => setBike(e.target.value)}>
+      <select
+        value={bike}
+        onChange={(e) => setBike(e.target.value)}
+        style={{ marginBottom: 10 }}
+      >
         <option value="">Select Bike</option>
         {bikes.map((b, i) => (
           <option key={i} value={b.name}>
@@ -86,15 +94,39 @@ const PetrolPump = () => {
       </select>
       <br />
 
-      <input type="number" placeholder="Petrol Rate ₹" value={rate} onChange={(e) => setRate(e.target.value)} />
+      <input
+        type="number"
+        placeholder="Petrol Rate ₹"
+        value={rate}
+        onChange={(e) => setRate(e.target.value)}
+        style={{ marginBottom: 10 }}
+      />
       <br />
-      <input type="number" placeholder="Amount ₹" value={amount} onChange={(e) => setAmount(e.target.value)} />
+
+      <input
+        type="number"
+        placeholder="Amount ₹"
+        value={amount}
+        onChange={(e) => setAmount(e.target.value)}
+        style={{ marginBottom: 10 }}
+      />
       <br />
-      <input type="number" placeholder="Current KM in Meter" value={km} onChange={(e) => setKm(e.target.value)} />
+
+      <input
+        type="number"
+        placeholder="Current KM in Meter"
+        value={km}
+        onChange={(e) => setKm(e.target.value)}
+        style={{ marginBottom: 10 }}
+      />
       <br />
 
       <button onClick={handleSave} style={{ marginTop: 10 }}>
         Save
+      </button>
+
+      <button onClick={downloadPDF} style={{ marginLeft: 10, marginTop: 10 }}>
+        📄 Download PDF
       </button>
 
       <h4 style={{ marginTop: 20 }}>📋 Petrol Fill Log</h4>
@@ -126,14 +158,9 @@ const PetrolPump = () => {
               ))}
             </tbody>
           </table>
-
           <p style={{ marginTop: 10 }}>
             <strong>💰 Total Petrol ₹:</strong> ₹{totalAmount.toFixed(2)}
           </p>
-
-          <button onClick={downloadPDF} style={{ marginTop: 10 }}>
-            📥 Download PDF
-          </button>
         </>
       ) : (
         <p>📭 No petrol fill logs found.</p>

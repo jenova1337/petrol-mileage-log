@@ -1,21 +1,17 @@
+// src/components/Summary.js
 import React, { useEffect, useState } from "react";
 import jsPDF from "jspdf";
-import "jspdf-autotable";
+import autoTable from "jspdf-autotable";
 
 const Summary = () => {
   const [data, setData] = useState([]);
-  const [bikes, setBikes] = useState([]);
   const [weeklySummary, setWeeklySummary] = useState({});
   const [monthlySummary, setMonthlySummary] = useState({});
   const [showSummary, setShowSummary] = useState(false);
 
   useEffect(() => {
     const storedData = JSON.parse(localStorage.getItem("petrolLogs")) || [];
-    const storedBikes = JSON.parse(localStorage.getItem("bikes")) || [];
-
     setData(storedData);
-    setBikes(storedBikes);
-
     calculateSummaries(storedData);
   }, []);
 
@@ -60,55 +56,48 @@ const Summary = () => {
     return grouped;
   };
 
-  const bikeLogs = groupByBike();
-
-  const downloadSummaryPDF = () => {
+  const generatePDF = () => {
     const doc = new jsPDF();
-    doc.text("Petrol Summary Report", 14, 16);
-    let startY = 25;
+    doc.text("Petrol Fill Summary Report", 14, 15);
 
-    Object.entries(bikeLogs).forEach(([bike, logs], index) => {
-      const rows = logs.map((log, idx) => [
-        idx + 1,
-        log.date,
-        log.rate,
-        log.amount,
-        log.litres,
-        log.km,
-      ]);
+    const groupedData = groupByBike();
+    let currentY = 25;
 
-      doc.text(`${bike}`, 14, startY);
-      doc.autoTable({
+    Object.entries(groupedData).forEach(([bike, logs]) => {
+      doc.text(`🚲 Bike: ${bike}`, 14, currentY);
+      currentY += 5;
+
+      autoTable(doc, {
+        startY: currentY,
         head: [["S.No", "Date", "Rate ₹", "Amount ₹", "Litres", "KM"]],
-        body: rows,
-        startY: startY + 5,
+        body: logs.map((log, index) => [
+          index + 1,
+          log.date,
+          log.rate,
+          log.amount,
+          log.litres,
+          log.km,
+        ]),
+        theme: "grid",
+        styles: { fontSize: 10 },
       });
 
-      startY = doc.lastAutoTable.finalY + 10;
+      currentY = doc.previousAutoTable.finalY + 10;
     });
 
-    // Append weekly summary
-    doc.text("🗓️ Weekly Summary", 14, startY);
-    startY += 5;
-    Object.entries(weeklySummary).forEach(([bike, sum]) => {
-      doc.text(`${bike} – KM: ${sum.km} | ₹: ${sum.amount}`, 14, startY);
-      startY += 6;
-    });
-
-    startY += 8;
-    doc.text("📅 Monthly Summary", 14, startY);
-    startY += 5;
-    Object.entries(monthlySummary).forEach(([bike, sum]) => {
-      doc.text(`${bike} – KM: ${sum.km} | ₹: ${sum.amount}`, 14, startY);
-      startY += 6;
-    });
-
-    doc.save("Summary_Report.pdf");
+    doc.save("Petrol-Summary.pdf");
   };
+
+  const bikeLogs = groupByBike();
 
   return (
     <div style={{ padding: "20px" }}>
       <h2>📊 Summary</h2>
+
+      <button onClick={generatePDF} style={{ marginBottom: "20px" }}>
+        📄 Download PDF
+      </button>
+
       {Object.keys(bikeLogs).length === 0 && <p>No data to show.</p>}
 
       {Object.entries(bikeLogs).map(([bike, logs]) => (
@@ -119,10 +108,10 @@ const Summary = () => {
               <tr>
                 <th>S.No</th>
                 <th>Date</th>
-                <th>Petrol ₹</th>
+                <th>Rate ₹</th>
                 <th>Amount ₹</th>
                 <th>Litres</th>
-                <th>Total KM</th>
+                <th>KM</th>
               </tr>
             </thead>
             <tbody>
@@ -141,11 +130,9 @@ const Summary = () => {
         </div>
       ))}
 
-      <button onClick={() => setShowSummary(!showSummary)} style={{ marginRight: 10 }}>
+      <button onClick={() => setShowSummary(!showSummary)} style={{ marginTop: 20 }}>
         {showSummary ? "Hide" : "Show"} Weekly & Monthly Summary
       </button>
-
-      <button onClick={downloadSummaryPDF}>📥 Download Summary PDF</button>
 
       {showSummary && (
         <>
