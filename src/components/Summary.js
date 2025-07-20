@@ -1,7 +1,6 @@
-// src/components/Summary.js
 import React, { useEffect, useState } from "react";
 import jsPDF from "jspdf";
-import autoTable from "jspdf-autotable";
+import "jspdf-autotable";
 
 const Summary = () => {
   const [data, setData] = useState([]);
@@ -10,9 +9,9 @@ const Summary = () => {
   const [showSummary, setShowSummary] = useState(false);
 
   useEffect(() => {
-    const storedData = JSON.parse(localStorage.getItem("petrolLogs")) || [];
-    setData(storedData);
-    calculateSummaries(storedData);
+    const logs = JSON.parse(localStorage.getItem("petrolLogs")) || [];
+    setData(logs);
+    calculateSummaries(logs);
   }, []);
 
   const calculateSummaries = (logs) => {
@@ -56,36 +55,37 @@ const Summary = () => {
     return grouped;
   };
 
-  const generatePDF = () => {
+  const downloadSummaryPDF = () => {
     const doc = new jsPDF();
-    doc.text("Petrol Fill Summary Report", 14, 15);
+    doc.text("Petrol Usage Summary", 14, 10);
 
-    const groupedData = groupByBike();
-    let currentY = 25;
+    let finalY = 20;
+    const grouped = groupByBike();
 
-    Object.entries(groupedData).forEach(([bike, logs]) => {
-      doc.text(`🚲 Bike: ${bike}`, 14, currentY);
-      currentY += 5;
+    Object.entries(grouped).forEach(([bike, logs]) => {
+      doc.text(`Bike: ${bike}`, 14, finalY);
+      finalY += 5;
 
-      autoTable(doc, {
-        startY: currentY,
+      const rows = logs.map((log, index) => [
+        index + 1,
+        log.date,
+        log.rate,
+        log.amount,
+        log.litres,
+        log.km,
+      ]);
+
+      doc.autoTable({
+        startY: finalY,
         head: [["S.No", "Date", "Rate ₹", "Amount ₹", "Litres", "KM"]],
-        body: logs.map((log, index) => [
-          index + 1,
-          log.date,
-          log.rate,
-          log.amount,
-          log.litres,
-          log.km,
-        ]),
+        body: rows,
         theme: "grid",
-        styles: { fontSize: 10 },
       });
 
-      currentY = doc.previousAutoTable.finalY + 10;
+      finalY = doc.autoTable.previous.finalY + 10;
     });
 
-    doc.save("Petrol-Summary.pdf");
+    doc.save("SummaryLog.pdf");
   };
 
   const bikeLogs = groupByBike();
@@ -93,10 +93,6 @@ const Summary = () => {
   return (
     <div style={{ padding: "20px" }}>
       <h2>📊 Summary</h2>
-
-      <button onClick={generatePDF} style={{ marginBottom: "20px" }}>
-        📄 Download PDF
-      </button>
 
       {Object.keys(bikeLogs).length === 0 && <p>No data to show.</p>}
 
@@ -108,10 +104,10 @@ const Summary = () => {
               <tr>
                 <th>S.No</th>
                 <th>Date</th>
-                <th>Rate ₹</th>
+                <th>Petrol ₹</th>
                 <th>Amount ₹</th>
                 <th>Litres</th>
-                <th>KM</th>
+                <th>Total KM</th>
               </tr>
             </thead>
             <tbody>
@@ -130,7 +126,7 @@ const Summary = () => {
         </div>
       ))}
 
-      <button onClick={() => setShowSummary(!showSummary)} style={{ marginTop: 20 }}>
+      <button onClick={() => setShowSummary(!showSummary)} style={{ marginTop: 10 }}>
         {showSummary ? "Hide" : "Show"} Weekly & Monthly Summary
       </button>
 
@@ -155,6 +151,10 @@ const Summary = () => {
           </ul>
         </>
       )}
+
+      <button onClick={downloadSummaryPDF} style={{ marginTop: 10 }}>
+        📄 Download Summary PDF
+      </button>
     </div>
   );
 };
