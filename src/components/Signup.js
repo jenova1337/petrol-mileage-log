@@ -1,3 +1,4 @@
+// src/components/Signup.js
 import React, { useState } from "react";
 import { createUserWithEmailAndPassword, getAuth } from "firebase/auth";
 import { doc, setDoc } from "firebase/firestore";
@@ -18,31 +19,35 @@ const Signup = ({ onSignup }) => {
   };
 
   const handleSignup = async () => {
-    const auth = getAuth();
-    const trimmedMobile = form.mobile.trim();
-    const email = `${trimmedMobile}@mileage.com`;
-
     try {
-      console.log("⏳ Creating user with email:", email);
+      const auth = getAuth();
+      const trimmedMobile = form.mobile.trim();
+      const email = `${trimmedMobile}@mileage.com`;
+      console.log("📧 Creating user with email:", email);
+
       const userCredential = await createUserWithEmailAndPassword(auth, email, form.password);
       const uid = userCredential.user.uid;
-      console.log("✅ Firebase Auth created with UID:", uid);
 
-      console.log("⏳ Writing user profile to Firestore...");
+      console.log("✅ Firebase Auth created. UID:", uid);
+
+      // Save profile in Firestore
       await setDoc(doc(db, "users", uid), {
         ...form,
         uid,
         email,
         createdAt: new Date().toISOString(),
       });
-      console.log("✅ Profile written to Firestore!");
 
-      alert(`✅ Signup successful!\nFake Email: ${email}`);
+      console.log("✅ Firestore write completed.");
+
+      // Save to localStorage
+      localStorage.setItem("user", JSON.stringify({ ...form, uid, email }));
+
+      alert(`✅ Signup successful!\nEmail used: ${email}`);
       onSignup();
-
     } catch (error) {
-      console.error("🔥 Signup error:", error);
-      alert("Signup failed: " + error.message);
+      console.error("❌ Signup error:", error.message);
+      alert("Signup error: " + error.message);
     }
   };
 
