@@ -2,15 +2,15 @@
 import React, { useState } from "react";
 import { createUserWithEmailAndPassword, getAuth } from "firebase/auth";
 import { doc, setDoc } from "firebase/firestore";
-import db from "../firebase";
+import { db } from "../firebase";
 
 const Signup = ({ onSignup }) => {
   const [form, setForm] = useState({
     name: "",
     gender: "",
     age: "",
-    email: "",
     mobile: "",
+    email: "",
     password: "",
     bikeCount: "",
   });
@@ -22,11 +22,14 @@ const Signup = ({ onSignup }) => {
   const handleSignup = async () => {
     try {
       const auth = getAuth();
-      const email = form.email.trim();
-      const userCredential = await createUserWithEmailAndPassword(auth, email, form.password);
+      const userCredential = await createUserWithEmailAndPassword(
+        auth,
+        form.email,
+        form.password
+      );
+
       const uid = userCredential.user.uid;
 
-      // Save user profile in Firestore
       await setDoc(doc(db, "users", uid), {
         ...form,
         uid,
@@ -35,10 +38,10 @@ const Signup = ({ onSignup }) => {
 
       localStorage.setItem("user", JSON.stringify({ ...form, uid }));
       alert("✅ Signup successful!");
-      onSignup();
+      onSignup(); // Go to dashboard
     } catch (error) {
       alert("Signup error: " + error.message);
-      console.error("Signup error:", error);
+      console.error(error);
     }
   };
 
@@ -48,8 +51,8 @@ const Signup = ({ onSignup }) => {
       <input name="name" placeholder="Name" onChange={handleChange} /><br />
       <input name="gender" placeholder="Gender" onChange={handleChange} /><br />
       <input name="age" placeholder="Age" type="number" onChange={handleChange} /><br />
-      <input name="email" placeholder="Email" onChange={handleChange} /><br />
       <input name="mobile" placeholder="Mobile Number" onChange={handleChange} /><br />
+      <input name="email" placeholder="Email ID" onChange={handleChange} /><br />
       <input name="bikeCount" placeholder="Number of Bikes" type="number" onChange={handleChange} /><br />
       <input name="password" placeholder="Password" type="password" onChange={handleChange} /><br />
       <button onClick={handleSignup}>Create Account</button>

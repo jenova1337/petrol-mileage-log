@@ -9,19 +9,31 @@ const Signin = ({ onSignin }) => {
   const handleSignin = async () => {
     try {
       const auth = getAuth();
-      const userCredential = await signInWithEmailAndPassword(auth, email.trim(), password);
-      onSignin(userCredential.user);
+      const userCredential = await signInWithEmailAndPassword(auth, email, password);
+
+      localStorage.setItem("user", JSON.stringify(userCredential.user));
+      alert("✅ Login successful!");
+      onSignin();
     } catch (error) {
-      alert("Signin failed: " + error.message);
-      console.error("Signin error:", error);
+      alert("Login error: " + error.message);
+      console.error(error);
     }
   };
 
   return (
     <div style={{ padding: 20 }}>
       <h2>🔐 Sign In</h2>
-      <input placeholder="Email" onChange={(e) => setEmail(e.target.value)} /><br />
-      <input placeholder="Password" type="password" onChange={(e) => setPassword(e.target.value)} /><br />
+      <input
+        placeholder="Email ID"
+        value={email}
+        onChange={(e) => setEmail(e.target.value)}
+      /><br />
+      <input
+        placeholder="Password"
+        type="password"
+        value={password}
+        onChange={(e) => setPassword(e.target.value)}
+      /><br />
       <button onClick={handleSignin}>Login</button>
     </div>
   );
