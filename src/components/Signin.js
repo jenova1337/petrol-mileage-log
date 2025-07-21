@@ -1,6 +1,6 @@
-// src/components/Signin.js
 import React, { useState } from "react";
-import { signInWithEmailAndPassword, getAuth } from "firebase/auth";
+import { signInWithEmailAndPassword } from "firebase/auth";
+import { auth } from "../firebase";
 
 const Signin = ({ onSignin }) => {
   const [email, setEmail] = useState("");
@@ -8,15 +8,15 @@ const Signin = ({ onSignin }) => {
 
   const handleSignin = async () => {
     try {
-      const auth = getAuth();
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      const user = userCredential.user;
 
-      localStorage.setItem("user", JSON.stringify(userCredential.user));
-      alert("✅ Login successful!");
-      onSignin();
+      localStorage.setItem("user", JSON.stringify({ email: user.email, uid: user.uid }));
+      alert("✅ Signin successful!");
+      onSignin(); // Go to dashboard
     } catch (error) {
-      alert("Login error: " + error.message);
-      console.error(error);
+      alert("Signin failed: " + error.message);
+      console.error("❌ Signin error:", error);
     }
   };
 
@@ -24,14 +24,18 @@ const Signin = ({ onSignin }) => {
     <div style={{ padding: 20 }}>
       <h2>🔐 Sign In</h2>
       <input
+        name="email"
+        id="email"
+        autoComplete="email"
         placeholder="Email ID"
-        value={email}
         onChange={(e) => setEmail(e.target.value)}
       /><br />
       <input
-        placeholder="Password"
+        name="password"
+        id="password"
         type="password"
-        value={password}
+        autoComplete="current-password"
+        placeholder="Password"
         onChange={(e) => setPassword(e.target.value)}
       /><br />
       <button onClick={handleSignin}>Login</button>
