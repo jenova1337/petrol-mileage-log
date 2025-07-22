@@ -1,10 +1,11 @@
-// src/components/PetrolPump.js
 import React, { useState, useEffect } from "react";
 import { collection, addDoc, getDocs } from "firebase/firestore";
-import db from "../firebase";
 import { Timestamp } from "firebase/firestore";
+import { useAuth } from "../auth/useAuth";
+import db from "../firebase";
 
 const PetrolPump = () => {
+  const { user } = useAuth();
   const [bike, setBike] = useState("");
   const [rate, setRate] = useState("");
   const [amount, setAmount] = useState("");
@@ -13,17 +14,23 @@ const PetrolPump = () => {
   const [bikes, setBikes] = useState([]);
 
   useEffect(() => {
-    const storedBikes = JSON.parse(localStorage.getItem("bikes")) || [];
-    setBikes(storedBikes);
-    fetchLogs();
-  }, []);
+    if (user) {
+      fetchBikes();
+      fetchLogs();
+    }
+  }, [user]);
+
+  const fetchBikes = async () => {
+    const querySnapshot = await getDocs(collection(db, "users", user.uid, "bikes"));
+    const bikeArr = [];
+    querySnapshot.forEach((doc) => bikeArr.push(doc.data()));
+    setBikes(bikeArr);
+  };
 
   const fetchLogs = async () => {
-    const querySnapshot = await getDocs(collection(db, "petrolLogs"));
+    const snapshot = await getDocs(collection(db, "users", user.uid, "petrolLogs"));
     const logs = [];
-    querySnapshot.forEach((doc) => {
-      logs.push(doc.data());
-    });
+    snapshot.forEach((doc) => logs.push(doc.data()));
     setLog(logs);
   };
 
@@ -44,7 +51,7 @@ const PetrolPump = () => {
     };
 
     try {
-      await addDoc(collection(db, "petrolLogs"), entry);
+      await addDoc(collection(db, "users", user.uid, "petrolLogs"), entry);
       setLog((prev) => [...prev, entry]);
       setBike("");
       setRate("");
@@ -89,7 +96,7 @@ const PetrolPump = () => {
 
       <input
         type="number"
-        placeholder="Current KM in Meter"
+        placeholder="Current KM"
         value={km}
         onChange={(e) => setKm(e.target.value)}
       />

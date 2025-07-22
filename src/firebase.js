@@ -1,19 +1,21 @@
 // src/firebase.js
 import { initializeApp } from "firebase/app";
-import { getFirestore } from "firebase/firestore";
 import { getAuth } from "firebase/auth";
+import { getFirestore } from "firebase/firestore";
 
+// ✅ Your new Firebase config
 const firebaseConfig = {
-  apiKey: "AIzaSyDJXTUS8xTqOxOw9Hi6R2_egFL2ZrQBYjQ",
-  authDomain: "petrol-mileage-log.firebaseapp.com",
-  projectId: "petrol-mileage-log",
-  storageBucket: "petrol-mileage-log.appspot.com", // ✅ fixed domain
-  messagingSenderId: "429354131544",
-  appId: "1:429354131544:web:4598917e716345aa602a2d"
+  apiKey: "AIzaSyAOh-xicUXllIKi5QqILmOlVsvfzsQk9Cc",
+  authDomain: "petrol-mileage-log-c91cf.firebaseapp.com",
+  projectId: "petrol-mileage-log-c91cf",
+  storageBucket: "petrol-mileage-log-c91cf.appspot.com", // fixed `.app` to `.com`
+  messagingSenderId: "601327640435",
+  appId: "1:601327640435:web:1c7c60991f0947d0552f06",
 };
 
+// ✅ Initialize Firebase
 const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
 const auth = getAuth(app);
+const db = getFirestore(app);
 
-export { db, auth };
+export { auth, db };
