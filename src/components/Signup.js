@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { createUserWithEmailAndPassword } from "firebase/auth";
 import { doc, setDoc } from "firebase/firestore";
-import { db, auth } from "../firebase";
+import { auth, db } from "../firebase";
 
 const Signup = ({ onSignup }) => {
   const [form, setForm] = useState({
@@ -27,31 +27,34 @@ const Signup = ({ onSignup }) => {
       );
       const uid = userCredential.user.uid;
 
+      // Save extra profile to Firestore
       await setDoc(doc(db, "users", uid), {
         ...form,
         uid,
         createdAt: new Date().toISOString(),
       });
 
+      // Optional: save locally
       localStorage.setItem("user", JSON.stringify({ ...form, uid }));
+
       alert("✅ Signup successful!");
-      onSignup(); // Go to dashboard
+      onSignup();
     } catch (error) {
-      alert("Signup error: " + error.message);
-      console.error("🔥 Signup failed:", error);
+      console.error("Signup Error:", error);
+      alert("❌ Signup failed: " + error.message);
     }
   };
 
   return (
     <div style={{ padding: 20 }}>
       <h2>📝 Signup</h2>
-      <input name="name" id="name" autoComplete="name" placeholder="Name" onChange={handleChange} /><br />
-      <input name="gender" id="gender" autoComplete="sex" placeholder="Gender" onChange={handleChange} /><br />
-      <input name="age" id="age" autoComplete="bday" placeholder="Age" type="number" onChange={handleChange} /><br />
-      <input name="mobile" id="mobile" autoComplete="tel" placeholder="Mobile Number" onChange={handleChange} /><br />
-      <input name="email" id="email" autoComplete="email" placeholder="Email ID" onChange={handleChange} /><br />
-      <input name="bikeCount" id="bikeCount" autoComplete="off" placeholder="Number of Bikes" type="number" onChange={handleChange} /><br />
-      <input name="password" id="password" autoComplete="new-password" placeholder="Password" type="password" onChange={handleChange} /><br />
+      <input name="name" placeholder="Name" onChange={handleChange} /><br />
+      <input name="gender" placeholder="Gender" onChange={handleChange} /><br />
+      <input name="age" placeholder="Age" type="number" onChange={handleChange} /><br />
+      <input name="mobile" placeholder="Mobile" onChange={handleChange} /><br />
+      <input name="email" placeholder="Email ID" onChange={handleChange} /><br />
+      <input name="bikeCount" placeholder="Bike Count" type="number" onChange={handleChange} /><br />
+      <input name="password" placeholder="Password" type="password" onChange={handleChange} /><br />
       <button onClick={handleSignup}>Create Account</button>
     </div>
   );

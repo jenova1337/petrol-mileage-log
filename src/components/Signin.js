@@ -1,3 +1,4 @@
+// src/components/Signin.js
 import React, { useState } from "react";
 import { signInWithEmailAndPassword } from "firebase/auth";
 import { auth } from "../firebase";
@@ -13,29 +14,26 @@ const Signin = ({ onSignin }) => {
 
       localStorage.setItem("user", JSON.stringify({ email: user.email, uid: user.uid }));
       alert("✅ Signin successful!");
-      onSignin(); // Go to dashboard
+      onSignin(); // change screen to dashboard
     } catch (error) {
-      alert("Signin failed: " + error.message);
-      console.error("❌ Signin error:", error);
+      console.error("❌ Signin error:", error.message);
+      alert("Signin error: " + error.message);
     }
   };
 
   return (
     <div style={{ padding: 20 }}>
-      <h2>🔐 Sign In</h2>
+      <h2>🔐 Signin</h2>
       <input
-        name="email"
-        id="email"
-        autoComplete="email"
+        type="email"
         placeholder="Email ID"
+        value={email}
         onChange={(e) => setEmail(e.target.value)}
       /><br />
       <input
-        name="password"
-        id="password"
         type="password"
-        autoComplete="current-password"
         placeholder="Password"
+        value={password}
         onChange={(e) => setPassword(e.target.value)}
       /><br />
       <button onClick={handleSignin}>Login</button>
