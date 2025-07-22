@@ -27,21 +27,18 @@ const Signup = ({ onSignup }) => {
       );
       const uid = userCredential.user.uid;
 
-      // Save extra profile to Firestore
       await setDoc(doc(db, "users", uid), {
         ...form,
         uid,
         createdAt: new Date().toISOString(),
       });
 
-      // Optional: save locally
       localStorage.setItem("user", JSON.stringify({ ...form, uid }));
-
       alert("✅ Signup successful!");
       onSignup();
     } catch (error) {
-      console.error("Signup Error:", error);
-      alert("❌ Signup failed: " + error.message);
+      alert("Signup failed: " + error.message);
+      console.error(error);
     }
   };
 
@@ -51,9 +48,9 @@ const Signup = ({ onSignup }) => {
       <input name="name" placeholder="Name" onChange={handleChange} /><br />
       <input name="gender" placeholder="Gender" onChange={handleChange} /><br />
       <input name="age" placeholder="Age" type="number" onChange={handleChange} /><br />
-      <input name="mobile" placeholder="Mobile" onChange={handleChange} /><br />
+      <input name="mobile" placeholder="Mobile Number" onChange={handleChange} /><br />
       <input name="email" placeholder="Email ID" onChange={handleChange} /><br />
-      <input name="bikeCount" placeholder="Bike Count" type="number" onChange={handleChange} /><br />
+      <input name="bikeCount" placeholder="Number of Bikes" type="number" onChange={handleChange} /><br />
       <input name="password" placeholder="Password" type="password" onChange={handleChange} /><br />
       <button onClick={handleSignup}>Create Account</button>
     </div>
