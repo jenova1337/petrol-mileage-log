@@ -4,11 +4,23 @@ import { db } from "../firebase";
 
 const ReserveAlert = ({ user }) => {
   const [reserveKM, setReserveKM] = useState("");
+  const [bike, setBike] = useState("");
+  const [bikes, setBikes] = useState([]);
   const [logs, setLogs] = useState([]);
 
   useEffect(() => {
-    if (user) fetchReserves();
+    if (user) {
+      fetchBikes();
+      fetchReserves();
+    }
   }, [user]);
+
+  const fetchBikes = async () => {
+    const querySnapshot = await getDocs(collection(db, "users", user.uid, "bikes"));
+    const bikeArr = [];
+    querySnapshot.forEach((doc) => bikeArr.push(doc.data()));
+    setBikes(bikeArr);
+  };
 
   const fetchReserves = async () => {
     const snapshot = await getDocs(collection(db, "users", user.uid, "reserves"));
@@ -18,9 +30,10 @@ const ReserveAlert = ({ user }) => {
   };
 
   const handleSave = async () => {
-    if (!reserveKM) return alert("Please enter KM");
+    if (!bike || !reserveKM) return alert("Please select bike and enter KM");
 
     const entry = {
+      bike,
       km: reserveKM,
       date: new Date().toLocaleString(),
     };
@@ -29,6 +42,7 @@ const ReserveAlert = ({ user }) => {
       await addDoc(collection(db, "users", user.uid, "reserves"), entry);
       setLogs((prev) => [...prev, entry]);
       setReserveKM("");
+      setBike("");
     } catch (err) {
       console.error("Error saving reserve:", err);
     }
@@ -45,26 +59,39 @@ const ReserveAlert = ({ user }) => {
         margin: "auto",
       }}
     >
-      <button onClick={() => window.location.reload()} style={{ marginBottom: "10px" }}>
-        🔙 Back to Dashboard
-      </button>
       <h3>🔔 Reserve Alert</h3>
+
+      <select
+        value={bike}
+        onChange={(e) => setBike(e.target.value)}
+        style={{ marginBottom: "10px", display: "block", padding: "6px", width: "100%" }}
+      >
+        <option value="">Select Bike</option>
+        {bikes.map((b, i) => (
+          <option key={i} value={b.name}>
+            {b.name}
+          </option>
+        ))}
+      </select>
+
       <input
         type="number"
         placeholder="Enter Reserve KM"
         value={reserveKM}
         onChange={(e) => setReserveKM(e.target.value)}
-        style={{ marginBottom: "10px", display: "block", padding: "6px" }}
+        style={{ marginBottom: "10px", display: "block", padding: "6px", width: "100%" }}
       />
+
       <button onClick={handleSave}>Save</button>
 
       <h4 style={{ marginTop: 20 }}>📋 Reserve Entries</h4>
       {logs.length > 0 ? (
-        <table border="1" cellPadding="6" style={{ borderCollapse: "collapse" }}>
+        <table border="1" cellPadding="6" style={{ borderCollapse: "collapse", width: "100%" }}>
           <thead>
             <tr>
               <th>S.No</th>
               <th>Date</th>
+              <th>Bike</th>
               <th>KM</th>
             </tr>
           </thead>
@@ -73,6 +100,7 @@ const ReserveAlert = ({ user }) => {
               <tr key={idx}>
                 <td>{idx + 1}</td>
                 <td>{entry.date}</td>
+                <td>{entry.bike}</td>
                 <td>{entry.km}</td>
               </tr>
             ))}

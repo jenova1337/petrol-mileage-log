@@ -1,6 +1,9 @@
 import React, { useState, useEffect } from "react";
-import { collection, addDoc, getDocs, Timestamp } from "firebase/firestore";
+import { collection, addDoc, getDocs } from "firebase/firestore";
+import { Timestamp } from "firebase/firestore";
 import { db } from "../firebase";
+import jsPDF from "jspdf";
+import "jspdf-autotable";
 
 const PetrolPump = ({ user }) => {
   const [bike, setBike] = useState("");
@@ -59,22 +62,41 @@ const PetrolPump = ({ user }) => {
     }
   };
 
+  const downloadPDF = () => {
+    const doc = new jsPDF();
+    doc.text("⛽ Petrol Pump Log", 14, 10);
+
+    const tableData = log.map((entry, index) => [
+      index + 1,
+      entry.date,
+      entry.bike,
+      entry.rate,
+      entry.amount,
+      entry.litres,
+      entry.km,
+    ]);
+
+    doc.autoTable({
+      startY: 20,
+      head: [["S.No", "Date", "Bike", "Rate ₹", "Amount ₹", "Litres", "KM"]],
+      body: tableData,
+      theme: "grid",
+    });
+
+    doc.save("PetrolPumpLog.pdf");
+  };
+
   const totalAmount = log.reduce((acc, curr) => acc + parseFloat(curr.amount || 0), 0);
 
   return (
-    <div
-      style={{
-        padding: "20px",
-        backgroundColor: "#f3e5f5",
-        border: "2px solid #ba68c8",
-        borderRadius: "10px",
-        maxWidth: "900px",
-        margin: "auto",
-      }}
-    >
+    <div style={{ padding: "20px" }}>
       <h3>⛽ Petrol Pump Log</h3>
 
-      <select value={bike} onChange={(e) => setBike(e.target.value)}>
+      <select
+        value={bike}
+        onChange={(e) => setBike(e.target.value)}
+        style={{ padding: "6px", marginBottom: "10px", width: "100%" }}
+      >
         <option value="">Select Bike</option>
         {bikes.map((b, i) => (
           <option key={i} value={b.name}>
@@ -82,40 +104,37 @@ const PetrolPump = ({ user }) => {
           </option>
         ))}
       </select>
-      <br />
 
       <input
         type="number"
         placeholder="Petrol Rate ₹"
         value={rate}
         onChange={(e) => setRate(e.target.value)}
+        style={{ padding: "6px", marginBottom: "10px", width: "100%" }}
       />
-      <br />
 
       <input
         type="number"
         placeholder="Amount ₹"
         value={amount}
         onChange={(e) => setAmount(e.target.value)}
+        style={{ padding: "6px", marginBottom: "10px", width: "100%" }}
       />
-      <br />
 
       <input
         type="number"
         placeholder="Current KM"
         value={km}
         onChange={(e) => setKm(e.target.value)}
+        style={{ padding: "6px", marginBottom: "10px", width: "100%" }}
       />
-      <br />
 
-      <button onClick={handleSave} style={{ marginTop: 10 }}>
-        Save
-      </button>
+      <button onClick={handleSave}>Save</button>
 
       <h4 style={{ marginTop: 20 }}>📋 Petrol Fill Log</h4>
       {log.length > 0 ? (
         <>
-          <table border="1" cellPadding="6" style={{ borderCollapse: "collapse" }}>
+          <table border="1" cellPadding="6" style={{ borderCollapse: "collapse", width: "100%" }}>
             <thead>
               <tr>
                 <th>S.No</th>
@@ -141,9 +160,13 @@ const PetrolPump = ({ user }) => {
               ))}
             </tbody>
           </table>
-          <p style={{ marginTop: 10 }}>
+          <p style={{ marginTop: "10px" }}>
             <strong>💰 Total Petrol ₹:</strong> ₹{totalAmount.toFixed(2)}
           </p>
+
+          <button onClick={downloadPDF} style={{ marginTop: "10px" }}>
+            📄 Download PDF
+          </button>
         </>
       ) : (
         <p>📭 No petrol fill logs found.</p>

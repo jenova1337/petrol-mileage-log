@@ -21,28 +21,30 @@ const Dashboard = ({ tab, setTab, onLogout, user }) => {
     { key: "summary", label: "📈 Summary" },
   ];
 
-  const renderTabContent = () => {
-    switch (tab) {
-      case "profile":
-        return <Profile user={user} />;
-      case "instructions":
-        return <Instructions />;
-      case "addBike":
-        return <AddBike />;
-      case "bikeDetails":
-        return <BikeDetails />;
-      case "reserveAlert":
-        return <ReserveAlert />;
-      case "petrolPump":
-        return <PetrolPump />;
-      case "mileage":
-        return <Mileage />;
-      case "summary":
-        return <Summary />;
-      default:
-        return null;
-    }
-  };
+
+
+const renderTabContent = () => {
+  switch (tab) {
+    case "profile":
+      return <Profile user={user} />;
+    case "instructions":
+      return <Instructions />;
+    case "addBike":
+      return <AddBike user={user} />;
+    case "bikeDetails":
+      return <BikeDetails user={user} />;
+    case "reserveAlert":
+      return <ReserveAlert user={user} />;
+    case "petrolPump":
+      return <PetrolPump user={user} />;
+    case "mileage":
+      return <Mileage user={user} />;
+    case "summary":
+      return <Summary user={user} />;
+    default:
+      return null;
+  }
+};
 
   return (
     <div style={{ display: "flex", height: "100vh", fontFamily: "sans-serif" }}>
