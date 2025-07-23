@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { collection, addDoc, getDocs } from "firebase/firestore";
-import db from "../firebase";
+import { db } from "../firebase"; // ✅ correct
 import useAuth from "../auth/useAuth";
 
 const AddBike = () => {
