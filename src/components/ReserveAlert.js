@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { collection, addDoc, getDocs } from "firebase/firestore";
 import db from "../firebase";
-import { useAuth } from "../auth/useAuth";
+import useAuth from "../auth/useAuth";
 
 const ReserveAlert = () => {
   const { user } = useAuth();

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { collection, addDoc, getDocs } from "firebase/firestore";
 import db from "../firebase";
-import { useAuth } from "../auth/useAuth";
+import useAuth from "../auth/useAuth";
 
 const AddBike = () => {
   const { user } = useAuth(); // get current user

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { collection, addDoc, getDocs } from "firebase/firestore";
 import { Timestamp } from "firebase/firestore";
-import { useAuth } from "../auth/useAuth";
+import useAuth from "../auth/useAuth";
 import db from "../firebase";
 
 const PetrolPump = () => {

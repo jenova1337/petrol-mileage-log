@@ -3,7 +3,7 @@ import jsPDF from "jspdf";
 import "jspdf-autotable";
 import { collection, getDocs } from "firebase/firestore";
 import db from "../firebase";
-import { useAuth } from "../auth/useAuth";
+import useAuth from "../auth/useAuth";
 
 const Summary = () => {
   const { user } = useAuth();
