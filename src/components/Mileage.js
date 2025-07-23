@@ -1,10 +1,8 @@
 import React, { useEffect, useState } from "react";
-import { db } from "../firebase"; // ✅ correct
+import { db } from "../firebase";
 import { collection, getDocs } from "firebase/firestore";
-import useAuth from "../auth/useAuth";
 
-const Mileage = () => {
-  const { user } = useAuth();
+const Mileage = ({ user }) => {
   const [reserves, setReserves] = useState([]);
   const [petrols, setPetrols] = useState([]);
   const [mileageData, setMileageData] = useState([]);

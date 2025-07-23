@@ -39,6 +39,8 @@ const Summary = () => {
       const km = parseFloat(log.km || 0);
       const amount = parseFloat(log.amount || 0);
 
+      if (!log.bike) return;
+
       if (logDate >= oneWeekAgo) {
         if (!weekly[log.bike]) weekly[log.bike] = { km: 0, amount: 0 };
         weekly[log.bike].km += km;
@@ -59,6 +61,7 @@ const Summary = () => {
   const groupByBike = () => {
     const grouped = {};
     data.forEach((log, index) => {
+      if (!log.bike) return;
       if (!grouped[log.bike]) grouped[log.bike] = [];
       grouped[log.bike].push({ ...log, index: index + 1 });
     });
@@ -78,11 +81,11 @@ const Summary = () => {
 
       const rows = logs.map((log, index) => [
         index + 1,
-        log.date,
-        log.rate,
-        log.amount,
-        log.litres,
-        log.km,
+        log.date || "-",
+        log.rate || "-",
+        log.amount || "-",
+        log.litres || "-",
+        log.km || "-",
       ]);
 
       doc.autoTable({
@@ -104,12 +107,12 @@ const Summary = () => {
     <div style={{ padding: "20px" }}>
       <h2>📊 Summary</h2>
 
-      {Object.keys(bikeLogs).length === 0 && <p>No data to show.</p>}
+      {Object.keys(bikeLogs).length === 0 && <p>📭 No data to show.</p>}
 
       {Object.entries(bikeLogs).map(([bike, logs]) => (
         <div key={bike} style={{ marginBottom: "30px" }}>
           <h3>{bike}</h3>
-          <table border="1" cellPadding="6">
+          <table border="1" cellPadding="6" style={{ borderCollapse: "collapse" }}>
             <thead>
               <tr>
                 <th>S.No</th>
@@ -146,7 +149,7 @@ const Summary = () => {
           <ul>
             {Object.entries(weeklySummary).map(([bike, sum]) => (
               <li key={bike}>
-                {bike} – KM: {sum.km} | ₹: {sum.amount}
+                {bike} – KM: {sum.km.toFixed(1)} | ₹: {sum.amount.toFixed(2)}
               </li>
             ))}
           </ul>
@@ -155,7 +158,7 @@ const Summary = () => {
           <ul>
             {Object.entries(monthlySummary).map(([bike, sum]) => (
               <li key={bike}>
-                {bike} – KM: {sum.km} | ₹: {sum.amount}
+                {bike} – KM: {sum.km.toFixed(1)} | ₹: {sum.amount.toFixed(2)}
               </li>
             ))}
           </ul>

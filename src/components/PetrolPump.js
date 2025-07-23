@@ -1,11 +1,8 @@
 import React, { useState, useEffect } from "react";
-import { collection, addDoc, getDocs } from "firebase/firestore";
-import { Timestamp } from "firebase/firestore";
-import useAuth from "../auth/useAuth";
+import { collection, addDoc, getDocs, Timestamp } from "firebase/firestore";
 import { db } from "../firebase";
 
-const PetrolPump = () => {
-  const { user } = useAuth();
+const PetrolPump = ({ user }) => {
   const [bike, setBike] = useState("");
   const [rate, setRate] = useState("");
   const [amount, setAmount] = useState("");
@@ -65,7 +62,16 @@ const PetrolPump = () => {
   const totalAmount = log.reduce((acc, curr) => acc + parseFloat(curr.amount || 0), 0);
 
   return (
-    <div style={{ padding: "20px" }}>
+    <div
+      style={{
+        padding: "20px",
+        backgroundColor: "#f3e5f5",
+        border: "2px solid #ba68c8",
+        borderRadius: "10px",
+        maxWidth: "900px",
+        margin: "auto",
+      }}
+    >
       <h3>⛽ Petrol Pump Log</h3>
 
       <select value={bike} onChange={(e) => setBike(e.target.value)}>
@@ -135,7 +141,7 @@ const PetrolPump = () => {
               ))}
             </tbody>
           </table>
-          <p>
+          <p style={{ marginTop: 10 }}>
             <strong>💰 Total Petrol ₹:</strong> ₹{totalAmount.toFixed(2)}
           </p>
         </>

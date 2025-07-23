@@ -1,10 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { collection, addDoc, getDocs } from "firebase/firestore";
-import { db } from "../firebase"; // ✅ correct
-import useAuth from "../auth/useAuth";
+import { db } from "../firebase";
 
-const AddBike = () => {
-  const { user } = useAuth(); // get current user
+const AddBike = ({ user }) => {  // ✅ user received as prop
   const [bike, setBike] = useState({
     name: "",
     model: "",
