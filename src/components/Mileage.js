@@ -1,16 +1,13 @@
+// src/components/Mileage.js
 import React, { useEffect, useState } from "react";
 import { db } from "../firebase";
 import { collection, getDocs } from "firebase/firestore";
 
 const Mileage = ({ user }) => {
-  const [reserves, setReserves] = useState([]);
-  const [petrols, setPetrols] = useState([]);
   const [mileageData, setMileageData] = useState([]);
 
   useEffect(() => {
-    if (user) {
-      fetchData();
-    }
+    if (user) fetchData();
   }, [user]);
 
   const fetchData = async () => {
@@ -25,16 +22,11 @@ const Mileage = ({ user }) => {
     petrolSnap.forEach((doc) => petrolArr.push(doc.data()));
     petrolArr.sort((a, b) => new Date(a.date) - new Date(b.date));
 
-    setReserves(reservesArr);
-    setPetrols(petrolArr);
-
     const mileageResults = [];
-
     for (let i = 0; i < reservesArr.length - 1; i++) {
       const before = reservesArr[i];
       const after = reservesArr[i + 1];
 
-      // Find latest petrol entry between two reserves
       const petrolBetween = petrolArr
         .filter(
           (p) =>
@@ -70,10 +62,6 @@ const Mileage = ({ user }) => {
         margin: "auto",
       }}
     >
-      <button onClick={() => window.location.reload()} style={{ marginBottom: "10px" }}>
-        🔙 Back to Dashboard
-      </button>
-
       <h3>📊 Mileage Report</h3>
       {mileageData.length > 0 ? (
         <table border="1" cellPadding="6" style={{ borderCollapse: "collapse" }}>
