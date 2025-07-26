@@ -1,4 +1,3 @@
-// src/App.js
 import React, { useState, useEffect } from "react";
 import Signup from "./components/Signup";
 import Signin from "./components/Signin";
@@ -7,17 +6,17 @@ import { getAuth, signOut } from "firebase/auth";
 import useAuth from "./auth/useAuth";
 
 const App = () => {
-  const firebaseUser = useAuth(); // from custom hook
+  const { user } = useAuth();   // Correct way
   const [screen, setScreen] = useState("signin");
   const [tab, setTab] = useState("profile");
 
   useEffect(() => {
-    if (firebaseUser) {
+    if (user) {
       setScreen("dashboard");
     } else {
       setScreen("signin");
     }
-  }, [firebaseUser]);
+  }, [user]);
 
   const handleLogout = () => {
     signOut(getAuth());
@@ -29,7 +28,12 @@ const App = () => {
       {screen === "signup" && <Signup onSignup={() => setScreen("dashboard")} />}
       {screen === "signin" && <Signin onSignin={() => setScreen("dashboard")} />}
       {screen === "dashboard" && (
-        <Dashboard tab={tab} setTab={setTab} onLogout={handleLogout} user={firebaseUser} />
+        <Dashboard
+          tab={tab}
+          setTab={setTab}
+          onLogout={handleLogout}
+          user={user}
+        />
       )}
       {screen !== "dashboard" && (
         <div style={{ textAlign: "center", marginTop: 20 }}>
