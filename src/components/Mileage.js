@@ -6,70 +6,82 @@ const Mileage = ({ user }) => {
   const [mileageData, setMileageData] = useState([]);
 
   useEffect(() => {
-    if (user) fetchData();
+    if (user) {
+      fetchData();
+    }
     // eslint-disable-next-line
   }, [user]);
 
   const parseDate = (dateValue) => {
-    // Firebase stored date could be string or Timestamp
     if (!dateValue) return new Date();
-    if (typeof dateValue === "string") return new Date(dateValue);
-    if (dateValue.seconds) return new Date(dateValue.seconds * 1000);
+    // Firestore timestamp object
+    if (typeof dateValue === "object" && dateValue.seconds) {
+      return new Date(dateValue.seconds * 1000);
+    }
+    // String date
     return new Date(dateValue);
   };
 
   const toNumber = (val) => {
-    if (!val) return 0;
-    return typeof val === "string" ? parseFloat(val) : val;
+    if (val === undefined || val === null || val === "") return 0;
+    return typeof val === "string" ? parseFloat(val) : Number(val);
   };
 
   const fetchData = async () => {
-    const reservesSnap = await getDocs(collection(db, "users", user.uid, "reserves"));
-    const petrolSnap = await getDocs(collection(db, "users", user.uid, "petrolLogs"));
+    try {
+      // Fetch reserves
+      const reservesSnap = await getDocs(collection(db, "users", user.uid, "reserves"));
+      const reservesArr = [];
+      reservesSnap.forEach((doc) => reservesArr.push(doc.data()));
 
-    const reservesArr = [];
-    reservesSnap.forEach((doc) => reservesArr.push(doc.data()));
-    reservesArr.sort((a, b) => parseDate(a.date) - parseDate(b.date));
+      // Sort by date
+      reservesArr.sort((a, b) => parseDate(a.date) - parseDate(b.date));
 
-    const petrolArr = [];
-    petrolSnap.forEach((doc) => petrolArr.push(doc.data()));
-    petrolArr.sort((a, b) => parseDate(a.date) - parseDate(b.date));
+      // Fetch petrol logs
+      const petrolSnap = await getDocs(collection(db, "users", user.uid, "petrolLogs"));
+      const petrolArr = [];
+      petrolSnap.forEach((doc) => petrolArr.push(doc.data()));
+      petrolArr.sort((a, b) => parseDate(a.date) - parseDate(b.date));
 
-    const mileageResults = [];
+      const mileageResults = [];
 
-    for (let i = 0; i < reservesArr.length - 1; i++) {
-      const before = reservesArr[i];
-      const after = reservesArr[i + 1];
+      // Compute mileage based on Reserve → Petrol → Reserve
+      for (let i = 0; i < reservesArr.length - 1; i++) {
+        const before = reservesArr[i];
+        const after = reservesArr[i + 1];
 
-      // find petrol entry between these reserves
-      const petrolBetween = petrolArr
-        .filter(
-          (p) =>
-            parseDate(p.date) > parseDate(before.date) &&
-            parseDate(p.date) < parseDate(after.date)
-        )
-        .pop();
+        const petrolBetween = petrolArr
+          .filter(
+            (p) =>
+              parseDate(p.date) > parseDate(before.date) &&
+              parseDate(p.date) < parseDate(after.date)
+          )
+          .pop(); // last petrol log between two reserves
 
-      if (before && after && petrolBetween) {
-        const beforeKM = toNumber(before.km);
-        const afterKM = toNumber(after.km);
-        const litres = toNumber(petrolBetween.litres);
+        if (before && after && petrolBetween) {
+          const beforeKM = toNumber(before.km);
+          const afterKM = toNumber(after.km);
+          const litres = toNumber(petrolBetween.litres);
 
-        if (litres > 0 && afterKM > beforeKM) {
-          const distance = afterKM - beforeKM;
-          const mileage = (distance / litres).toFixed(2);
+          if (litres > 0 && afterKM > beforeKM) {
+            const distance = afterKM - beforeKM;
+            const mileage = (distance / litres).toFixed(2);
 
-          mileageResults.push({
-            beforeKM,
-            petrolLitres: litres,
-            afterKM,
-            mileage,
-          });
+            mileageResults.push({
+              beforeKM,
+              petrolLitres: litres,
+              afterKM,
+              mileage,
+            });
+          }
         }
       }
-    }
 
-    setMileageData(mileageResults);
+      setMileageData(mileageResults);
+    } catch (err) {
+      console.error("Error fetching mileage data:", err);
+      setMileageData([]);
+    }
   };
 
   return (
