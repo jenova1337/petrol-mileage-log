@@ -3,7 +3,7 @@ import { db } from "../firebase";
 import { collection, getDocs } from "firebase/firestore";
 
 const Mileage = ({ user }) => {
-  const [mileageData, setMileageData] = useState([]);
+  const [rows, setRows] = useState([]);
 
   useEffect(() => {
     if (user) {
@@ -14,74 +14,66 @@ const Mileage = ({ user }) => {
 
   const parseDate = (dateValue) => {
     if (!dateValue) return new Date();
-    // Firestore timestamp object
     if (typeof dateValue === "object" && dateValue.seconds) {
       return new Date(dateValue.seconds * 1000);
     }
-    // String date
     return new Date(dateValue);
   };
 
   const toNumber = (val) => {
-    if (val === undefined || val === null || val === "") return 0;
-    return typeof val === "string" ? parseFloat(val) : Number(val);
+    if (val === undefined || val === null || val === "") return NaN;
+    const num = typeof val === "string" ? parseFloat(val) : Number(val);
+    return isNaN(num) ? NaN : num;
   };
 
   const fetchData = async () => {
-    try {
-      // Fetch reserves
-      const reservesSnap = await getDocs(collection(db, "users", user.uid, "reserves"));
-      const reservesArr = [];
-      reservesSnap.forEach((doc) => reservesArr.push(doc.data()));
+    const reservesSnap = await getDocs(collection(db, "users", user.uid, "reserves"));
+    const petrolSnap = await getDocs(collection(db, "users", user.uid, "petrolLogs"));
 
-      // Sort by date
-      reservesArr.sort((a, b) => parseDate(a.date) - parseDate(b.date));
+    const reserves = [];
+    reservesSnap.forEach((doc) => reserves.push(doc.data()));
+    reserves.sort((a, b) => parseDate(a.date) - parseDate(b.date));
 
-      // Fetch petrol logs
-      const petrolSnap = await getDocs(collection(db, "users", user.uid, "petrolLogs"));
-      const petrolArr = [];
-      petrolSnap.forEach((doc) => petrolArr.push(doc.data()));
-      petrolArr.sort((a, b) => parseDate(a.date) - parseDate(b.date));
+    const petrols = [];
+    petrolSnap.forEach((doc) => petrols.push(doc.data()));
+    petrols.sort((a, b) => parseDate(a.date) - parseDate(b.date));
 
-      const mileageResults = [];
+    const tableRows = [];
 
-      // Compute mileage based on Reserve → Petrol → Reserve
-      for (let i = 0; i < reservesArr.length - 1; i++) {
-        const before = reservesArr[i];
-        const after = reservesArr[i + 1];
+    for (let i = 0; i < reserves.length - 1; i++) {
+      const before = reserves[i];
+      const after = reserves[i + 1];
 
-        const petrolBetween = petrolArr
-          .filter(
-            (p) =>
-              parseDate(p.date) > parseDate(before.date) &&
-              parseDate(p.date) < parseDate(after.date)
-          )
-          .pop(); // last petrol log between two reserves
+      // Petrol between two reserves
+      const petrolBetween = petrols
+        .filter(
+          (p) =>
+            parseDate(p.date) > parseDate(before.date) &&
+            parseDate(p.date) < parseDate(after.date)
+        )
+        .pop();
 
-        if (before && after && petrolBetween) {
-          const beforeKM = toNumber(before.km);
-          const afterKM = toNumber(after.km);
-          const litres = toNumber(petrolBetween.litres);
+      // Always push raw data to table
+      let mileage = "-";
+      if (petrolBetween) {
+        const beforeKM = toNumber(before.km);
+        const afterKM = toNumber(after.km);
+        const litres = toNumber(petrolBetween.litres);
 
-          if (litres > 0 && afterKM > beforeKM) {
-            const distance = afterKM - beforeKM;
-            const mileage = (distance / litres).toFixed(2);
-
-            mileageResults.push({
-              beforeKM,
-              petrolLitres: litres,
-              afterKM,
-              mileage,
-            });
-          }
+        if (!isNaN(beforeKM) && !isNaN(afterKM) && !isNaN(litres) && litres > 0) {
+          mileage = ((afterKM - beforeKM) / litres).toFixed(2);
         }
       }
 
-      setMileageData(mileageResults);
-    } catch (err) {
-      console.error("Error fetching mileage data:", err);
-      setMileageData([]);
+      tableRows.push({
+        beforeKM: before.km || "-",
+        petrolLitres: petrolBetween ? petrolBetween.litres : "-",
+        afterKM: after.km || "-",
+        mileage,
+      });
     }
+
+    setRows(tableRows);
   };
 
   return (
@@ -96,7 +88,7 @@ const Mileage = ({ user }) => {
       }}
     >
       <h3>📊 Mileage Report</h3>
-      {mileageData.length > 0 ? (
+      {rows.length > 0 ? (
         <table border="1" cellPadding="6" style={{ borderCollapse: "collapse" }}>
           <thead>
             <tr>
@@ -108,19 +100,19 @@ const Mileage = ({ user }) => {
             </tr>
           </thead>
           <tbody>
-            {mileageData.map((m, idx) => (
+            {rows.map((r, idx) => (
               <tr key={idx}>
                 <td>{idx + 1}</td>
-                <td>{m.beforeKM}</td>
-                <td>{m.petrolLitres}</td>
-                <td>{m.afterKM}</td>
-                <td>{m.mileage}</td>
+                <td>{r.beforeKM}</td>
+                <td>{r.petrolLitres}</td>
+                <td>{r.afterKM}</td>
+                <td>{r.mileage}</td>
               </tr>
             ))}
           </tbody>
         </table>
       ) : (
-        <p>📭 Not enough data to calculate mileage.</p>
+        <p>📭 No Reserve + Petrol entries found.</p>
       )}
     </div>
   );
