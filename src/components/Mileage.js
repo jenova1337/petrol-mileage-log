@@ -5,27 +5,26 @@ import { collection, getDocs } from "firebase/firestore";
 const Mileage = ({ user }) => {
   const [rows, setRows] = useState([]);
 
-  const parseDate = (dateValue) => {
-    if (!dateValue) return new Date(0);
-    if (typeof dateValue === "object" && dateValue.seconds) {
-      return new Date(dateValue.seconds * 1000);
+  // Convert Firestore date (string or timestamp) to JS Date
+  const parseDate = (value) => {
+    if (!value) return new Date(0);
+    if (typeof value === "object" && value.seconds) {
+      return new Date(value.seconds * 1000);
     }
-    return new Date(dateValue);
+    return new Date(value);
   };
 
-  const toNumber = (val) => {
+  // Convert to number safely
+  const toNum = (val) => {
     if (val === undefined || val === null || val === "") return NaN;
-    const num = typeof val === "string" ? parseFloat(val) : Number(val);
-    return isNaN(num) ? NaN : num;
+    const n = typeof val === "string" ? parseFloat(val) : Number(val);
+    return isNaN(n) ? NaN : n;
   };
 
   const fetchData = async () => {
-    const reservesSnap = await getDocs(
-      collection(db, "users", user.uid, "reserves")
-    );
-    const petrolSnap = await getDocs(
-      collection(db, "users", user.uid, "petrolLogs")
-    );
+    // Fetch reserves and petrol logs
+    const reservesSnap = await getDocs(collection(db, "users", user.uid, "reserves"));
+    const petrolSnap = await getDocs(collection(db, "users", user.uid, "petrolLogs"));
 
     const reserves = [];
     reservesSnap.forEach((doc) => reserves.push(doc.data()));
@@ -35,29 +34,34 @@ const Mileage = ({ user }) => {
     petrolSnap.forEach((doc) => petrols.push(doc.data()));
     petrols.sort((a, b) => parseDate(a.date) - parseDate(b.date));
 
-    const tableRows = [];
+    const table = [];
 
     for (let i = 0; i < reserves.length - 1; i++) {
       const before = reserves[i];
       const after = reserves[i + 1];
 
-      // Find last petrol log between these two reserves
-      const between = petrols.filter(
+      // All petrol entries between these two reserve points
+      const logsInBetween = petrols.filter(
         (p) =>
           parseDate(p.date) > parseDate(before.date) &&
           parseDate(p.date) < parseDate(after.date)
       );
 
-      let petrolBetween = between.length > 0 ? between[between.length - 1] : null;
+      // Use the latest petrol entry between these reserves
+      const petrolBetween =
+        logsInBetween.length > 0 ? logsInBetween[logsInBetween.length - 1] : null;
 
       let mileage = "-";
-      let litresDisplay = "-";
+      let litresShow = "-";
 
       if (petrolBetween) {
-        litresDisplay = petrolBetween.litres; // raw value (string or number)
-        const beforeKM = toNumber(before.km);
-        const afterKM = toNumber(after.km);
-        const litres = toNumber(petrolBetween.litres);
+        // Show litres directly
+        litresShow = petrolBetween.litres ?? "-";
+
+        // Convert to numbers for calculation
+        const beforeKM = toNum(before.km);
+        const afterKM = toNum(after.km);
+        const litres = toNum(petrolBetween.litres);
 
         if (
           !isNaN(beforeKM) &&
@@ -70,15 +74,15 @@ const Mileage = ({ user }) => {
         }
       }
 
-      tableRows.push({
+      table.push({
         beforeKM: before.km || "-",
-        petrolLitres: litresDisplay,
+        petrolLitres: litresShow,
         afterKM: after.km || "-",
         mileage,
       });
     }
 
-    setRows(tableRows);
+    setRows(table);
   };
 
   useEffect(() => {
