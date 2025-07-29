@@ -3,7 +3,23 @@ import { db } from "../firebase";
 import { collection, getDocs } from "firebase/firestore";
 
 const Mileage = ({ user }) => {
-  const [rows, setRows] = useState([]);
+  const [mileageData, setMileageData] = useState([]);
+
+  // Helper: convert Firebase date field to JS Date
+  const parseDate = (val) => {
+    if (!val) return new Date(0);
+    if (typeof val === "string") return new Date(val);
+    if (typeof val === "object" && val.seconds) {
+      return new Date(val.seconds * 1000);
+    }
+    return new Date(val);
+  };
+
+  // Helper: ensure numeric conversion
+  const toNum = (val) => {
+    if (val === undefined || val === null) return 0;
+    return isNaN(Number(val)) ? 0 : Number(val);
+  };
 
   useEffect(() => {
     if (user) {
@@ -12,68 +28,60 @@ const Mileage = ({ user }) => {
     // eslint-disable-next-line
   }, [user]);
 
-  const parseDate = (dateValue) => {
-    if (!dateValue) return new Date();
-    if (typeof dateValue === "object" && dateValue.seconds) {
-      return new Date(dateValue.seconds * 1000);
-    }
-    return new Date(dateValue);
-  };
-
-  const toNumber = (val) => {
-    if (val === undefined || val === null || val === "") return NaN;
-    const num = typeof val === "string" ? parseFloat(val) : Number(val);
-    return isNaN(num) ? NaN : num;
-  };
-
   const fetchData = async () => {
-    const reservesSnap = await getDocs(collection(db, "users", user.uid, "reserves"));
-    const petrolSnap = await getDocs(collection(db, "users", user.uid, "petrolLogs"));
+    const reservesSnap = await getDocs(
+      collection(db, "users", user.uid, "reserves")
+    );
+    const petrolSnap = await getDocs(
+      collection(db, "users", user.uid, "petrolLogs")
+    );
 
-    const reserves = [];
-    reservesSnap.forEach((doc) => reserves.push(doc.data()));
-    reserves.sort((a, b) => parseDate(a.date) - parseDate(b.date));
+    // Prepare arrays
+    const reservesArr = [];
+    reservesSnap.forEach((doc) => reservesArr.push(doc.data()));
+    reservesArr.sort((a, b) => parseDate(a.date) - parseDate(b.date));
 
-    const petrols = [];
-    petrolSnap.forEach((doc) => petrols.push(doc.data()));
-    petrols.sort((a, b) => parseDate(a.date) - parseDate(b.date));
+    const petrolArr = [];
+    petrolSnap.forEach((doc) => petrolArr.push(doc.data()));
+    petrolArr.sort((a, b) => parseDate(a.date) - parseDate(b.date));
 
-    const tableRows = [];
+    const results = [];
 
-    for (let i = 0; i < reserves.length - 1; i++) {
-      const before = reserves[i];
-      const after = reserves[i + 1];
+    // Loop over reserve entries
+    for (let i = 0; i < reservesArr.length - 1; i++) {
+      const before = reservesArr[i];
+      const after = reservesArr[i + 1];
 
-      // Petrol between two reserves
-      const petrolBetween = petrols
-        .filter(
-          (p) =>
-            parseDate(p.date) > parseDate(before.date) &&
-            parseDate(p.date) < parseDate(after.date)
-        )
-        .pop();
+      // find petrol entries between before.date and after.date
+      const between = petrolArr.filter(
+        (p) =>
+          parseDate(p.date) > parseDate(before.date) &&
+          parseDate(p.date) < parseDate(after.date)
+      );
 
-      // Always push raw data to table
-      let mileage = "-";
-      if (petrolBetween) {
-        const beforeKM = toNumber(before.km);
-        const afterKM = toNumber(after.km);
-        const litres = toNumber(petrolBetween.litres);
+      if (between.length === 0) continue;
 
-        if (!isNaN(beforeKM) && !isNaN(afterKM) && !isNaN(litres) && litres > 0) {
-          mileage = ((afterKM - beforeKM) / litres).toFixed(2);
-        }
+      // Use the last petrol entry between these reserves
+      const petrol = between[between.length - 1];
+
+      const beforeKM = toNum(before.km);
+      const afterKM = toNum(after.km);
+      const litres = toNum(petrol.litres);
+
+      if (litres > 0 && afterKM > beforeKM) {
+        const distance = afterKM - beforeKM;
+        const mileage = (distance / litres).toFixed(2);
+
+        results.push({
+          beforeKM,
+          petrolLitres: litres,
+          afterKM,
+          mileage,
+        });
       }
-
-      tableRows.push({
-        beforeKM: before.km || "-",
-        petrolLitres: petrolBetween ? petrolBetween.litres : "-",
-        afterKM: after.km || "-",
-        mileage,
-      });
     }
 
-    setRows(tableRows);
+    setMileageData(results);
   };
 
   return (
@@ -88,7 +96,7 @@ const Mileage = ({ user }) => {
       }}
     >
       <h3>📊 Mileage Report</h3>
-      {rows.length > 0 ? (
+      {mileageData.length > 0 ? (
         <table border="1" cellPadding="6" style={{ borderCollapse: "collapse" }}>
           <thead>
             <tr>
@@ -96,23 +104,23 @@ const Mileage = ({ user }) => {
               <th>Before Reserve KM</th>
               <th>Petrol Poured (L)</th>
               <th>After Reserve KM</th>
-              <th>KM/Litre</th>
+              <th>Mileage (KM/L)</th>
             </tr>
           </thead>
           <tbody>
-            {rows.map((r, idx) => (
+            {mileageData.map((row, idx) => (
               <tr key={idx}>
                 <td>{idx + 1}</td>
-                <td>{r.beforeKM}</td>
-                <td>{r.petrolLitres}</td>
-                <td>{r.afterKM}</td>
-                <td>{r.mileage}</td>
+                <td>{row.beforeKM}</td>
+                <td>{row.petrolLitres}</td>
+                <td>{row.afterKM}</td>
+                <td>{row.mileage}</td>
               </tr>
             ))}
           </tbody>
         </table>
       ) : (
-        <p>📭 No Reserve + Petrol entries found.</p>
+        <p>📭 Not enough data (Reserve → Petrol → Reserve) to calculate mileage.</p>
       )}
     </div>
   );
