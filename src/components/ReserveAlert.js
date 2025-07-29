@@ -30,12 +30,15 @@ const ReserveAlert = ({ user }) => {
   };
 
   const handleSave = async () => {
-    if (!bike || !reserveKM) return alert("Please select bike and enter KM");
+    if (!bike || !reserveKM) {
+      alert("Please select a bike and enter KM");
+      return;
+    }
 
     const entry = {
       bike,
       km: reserveKM,
-      date: new Date().toLocaleString(),
+      date: new Date().toISOString(),
     };
 
     try {
@@ -48,6 +51,8 @@ const ReserveAlert = ({ user }) => {
     }
   };
 
+  const inputStyle = { marginBottom: "10px", display: "block", padding: "6px", width: "100%" };
+
   return (
     <div
       style={{
@@ -59,12 +64,12 @@ const ReserveAlert = ({ user }) => {
         margin: "auto",
       }}
     >
-      <h3>ðŸ”” Reserve Alert</h3>
+      <h3>🔔 Reserve Alert</h3>
 
       <select
         value={bike}
         onChange={(e) => setBike(e.target.value)}
-        style={{ marginBottom: "10px", display: "block", padding: "6px", width: "100%" }}
+        style={inputStyle}
       >
         <option value="">Select Bike</option>
         {bikes.map((b, i) => (
@@ -79,12 +84,12 @@ const ReserveAlert = ({ user }) => {
         placeholder="Enter Reserve KM"
         value={reserveKM}
         onChange={(e) => setReserveKM(e.target.value)}
-        style={{ marginBottom: "10px", display: "block", padding: "6px", width: "100%" }}
+        style={inputStyle}
       />
 
       <button onClick={handleSave}>Save</button>
 
-      <h4 style={{ marginTop: 20 }}>ðŸ“‹ Reserve Entries</h4>
+      <h4 style={{ marginTop: 20 }}>📋 Reserve Entries</h4>
       {logs.length > 0 ? (
         <table border="1" cellPadding="6" style={{ borderCollapse: "collapse", width: "100%" }}>
           <thead>
@@ -107,7 +112,7 @@ const ReserveAlert = ({ user }) => {
           </tbody>
         </table>
       ) : (
-        <p>ðŸ“­ No reserve logs yet.</p>
+        <p>📭 No reserve logs yet.</p>
       )}
     </div>
   );

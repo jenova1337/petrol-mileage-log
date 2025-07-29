@@ -7,7 +7,7 @@ import "jspdf-autotable";
 
 const PetrolPump = ({ user }) => {
   const { user: authUser } = useAuth();
-  const currentUser = user || authUser; // prefer prop user if passed
+  const currentUser = user || authUser;
   const [bike, setBike] = useState("");
   const [rate, setRate] = useState("");
   const [amount, setAmount] = useState("");
@@ -48,7 +48,6 @@ const PetrolPump = ({ user }) => {
 
     const litresValue = parseFloat(amount) / parseFloat(rate);
 
-    // Store ISO date and numbers
     const entry = {
       date: new Date().toISOString(),
       bike,
@@ -78,7 +77,6 @@ const PetrolPump = ({ user }) => {
     0
   );
 
-  // ---- PDF Download ----
   const handleDownloadPDF = () => {
     const doc = new jsPDF();
     doc.text("Petrol Fill Log", 14, 10);
@@ -103,11 +101,17 @@ const PetrolPump = ({ user }) => {
     doc.save("PetrolLog.pdf");
   };
 
+  const inputStyle = { marginBottom: "10px", display: "block" };
+
   return (
     <div style={{ padding: "20px" }}>
       <h3>⛽ Petrol Pump Log</h3>
 
-      <select value={bike} onChange={(e) => setBike(e.target.value)}>
+      <select
+        value={bike}
+        onChange={(e) => setBike(e.target.value)}
+        style={inputStyle}
+      >
         <option value="">Select Bike</option>
         {bikes.map((b, i) => (
           <option key={i} value={b.name}>
@@ -115,31 +119,30 @@ const PetrolPump = ({ user }) => {
           </option>
         ))}
       </select>
-      <br />
 
       <input
         type="number"
         placeholder="Petrol Rate ₹"
         value={rate}
         onChange={(e) => setRate(e.target.value)}
+        style={inputStyle}
       />
-      <br />
 
       <input
         type="number"
         placeholder="Amount ₹"
         value={amount}
         onChange={(e) => setAmount(e.target.value)}
+        style={inputStyle}
       />
-      <br />
 
       <input
         type="number"
         placeholder="Current KM"
         value={km}
         onChange={(e) => setKm(e.target.value)}
+        style={inputStyle}
       />
-      <br />
 
       <button onClick={handleSave} style={{ marginTop: 10 }}>
         Save

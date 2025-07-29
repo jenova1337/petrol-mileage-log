@@ -31,24 +31,17 @@ const Mileage = ({ user }) => {
     petrolSnap.forEach((doc) => petrols.push(doc.data()));
     petrols.sort((a, b) => parseDate(a.date) - parseDate(b.date));
 
-    console.log("Reserves:", reserves);
-    console.log("Petrol logs:", petrols);
-
     const table = [];
 
     for (let i = 0; i < reserves.length - 1; i++) {
       const before = reserves[i];
       const after = reserves[i + 1];
 
+      // All petrol logs between these two reserves
       const logsInBetween = petrols.filter(
         (p) =>
           parseDate(p.date) > parseDate(before.date) &&
           parseDate(p.date) < parseDate(after.date)
-      );
-
-      console.log(
-        `Between ${before.date} and ${after.date}, found petrol logs:`,
-        logsInBetween
       );
 
       const petrolBetween =
