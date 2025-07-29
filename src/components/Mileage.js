@@ -5,7 +5,6 @@ import { collection, getDocs } from "firebase/firestore";
 const Mileage = ({ user }) => {
   const [rows, setRows] = useState([]);
 
-  // Convert Firestore date (string or timestamp) to JS Date
   const parseDate = (value) => {
     if (!value) return new Date(0);
     if (typeof value === "object" && value.seconds) {
@@ -14,7 +13,6 @@ const Mileage = ({ user }) => {
     return new Date(value);
   };
 
-  // Convert to number safely
   const toNum = (val) => {
     if (val === undefined || val === null || val === "") return NaN;
     const n = typeof val === "string" ? parseFloat(val) : Number(val);
@@ -33,20 +31,26 @@ const Mileage = ({ user }) => {
     petrolSnap.forEach((doc) => petrols.push(doc.data()));
     petrols.sort((a, b) => parseDate(a.date) - parseDate(b.date));
 
+    console.log("Reserves:", reserves);
+    console.log("Petrol logs:", petrols);
+
     const table = [];
 
     for (let i = 0; i < reserves.length - 1; i++) {
       const before = reserves[i];
       const after = reserves[i + 1];
 
-      // Petrol entries between these reserves
       const logsInBetween = petrols.filter(
         (p) =>
           parseDate(p.date) > parseDate(before.date) &&
           parseDate(p.date) < parseDate(after.date)
       );
 
-      // Use the **latest** petrol entry between these reserves
+      console.log(
+        `Between ${before.date} and ${after.date}, found petrol logs:`,
+        logsInBetween
+      );
+
       const petrolBetween =
         logsInBetween.length > 0 ? logsInBetween[logsInBetween.length - 1] : null;
 
