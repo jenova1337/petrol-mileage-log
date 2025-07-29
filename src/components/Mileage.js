@@ -22,7 +22,6 @@ const Mileage = ({ user }) => {
   };
 
   const fetchData = async () => {
-    // Fetch reserves and petrol logs
     const reservesSnap = await getDocs(collection(db, "users", user.uid, "reserves"));
     const petrolSnap = await getDocs(collection(db, "users", user.uid, "petrolLogs"));
 
@@ -40,14 +39,14 @@ const Mileage = ({ user }) => {
       const before = reserves[i];
       const after = reserves[i + 1];
 
-      // All petrol entries between these two reserve points
+      // Petrol entries between these reserves
       const logsInBetween = petrols.filter(
         (p) =>
           parseDate(p.date) > parseDate(before.date) &&
           parseDate(p.date) < parseDate(after.date)
       );
 
-      // Use the latest petrol entry between these reserves
+      // Use the **latest** petrol entry between these reserves
       const petrolBetween =
         logsInBetween.length > 0 ? logsInBetween[logsInBetween.length - 1] : null;
 
@@ -55,10 +54,8 @@ const Mileage = ({ user }) => {
       let litresShow = "-";
 
       if (petrolBetween) {
-        // Show litres directly
         litresShow = petrolBetween.litres ?? "-";
 
-        // Convert to numbers for calculation
         const beforeKM = toNum(before.km);
         const afterKM = toNum(after.km);
         const litres = toNum(petrolBetween.litres);

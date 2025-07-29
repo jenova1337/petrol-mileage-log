@@ -2,6 +2,8 @@ import React, { useState, useEffect } from "react";
 import { collection, addDoc, getDocs } from "firebase/firestore";
 import useAuth from "../auth/useAuth";
 import { db } from "../firebase";
+import jsPDF from "jspdf";
+import "jspdf-autotable";
 
 const PetrolPump = ({ user }) => {
   const { user: authUser } = useAuth();
@@ -75,6 +77,31 @@ const PetrolPump = ({ user }) => {
     (acc, curr) => acc + (parseFloat(curr.amount) || 0),
     0
   );
+
+  // ---- PDF Download ----
+  const handleDownloadPDF = () => {
+    const doc = new jsPDF();
+    doc.text("Petrol Fill Log", 14, 10);
+
+    const rows = log.map((entry, index) => [
+      index + 1,
+      entry.date,
+      entry.bike,
+      entry.rate,
+      entry.amount,
+      entry.litres,
+      entry.km,
+    ]);
+
+    doc.autoTable({
+      startY: 20,
+      head: [["S.No", "Date", "Bike", "Rate ₹", "Amount ₹", "Litres", "KM"]],
+      body: rows,
+      theme: "grid",
+    });
+
+    doc.save("PetrolLog.pdf");
+  };
 
   return (
     <div style={{ padding: "20px" }}>
@@ -150,6 +177,9 @@ const PetrolPump = ({ user }) => {
           <p>
             <strong>💰 Total Petrol ₹:</strong> ₹{totalAmount.toFixed(2)}
           </p>
+          <button onClick={handleDownloadPDF} style={{ marginTop: 10 }}>
+            📄 Download PDF
+          </button>
         </>
       ) : (
         <p>📭 No petrol fill logs found.</p>
