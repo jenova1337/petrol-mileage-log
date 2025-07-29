@@ -5,15 +5,8 @@ import { collection, getDocs } from "firebase/firestore";
 const Mileage = ({ user }) => {
   const [rows, setRows] = useState([]);
 
-  useEffect(() => {
-    if (user) {
-      fetchData();
-    }
-    // eslint-disable-next-line
-  }, [user]);
-
   const parseDate = (dateValue) => {
-    if (!dateValue) return new Date();
+    if (!dateValue) return new Date(0);
     if (typeof dateValue === "object" && dateValue.seconds) {
       return new Date(dateValue.seconds * 1000);
     }
@@ -27,8 +20,12 @@ const Mileage = ({ user }) => {
   };
 
   const fetchData = async () => {
-    const reservesSnap = await getDocs(collection(db, "users", user.uid, "reserves"));
-    const petrolSnap = await getDocs(collection(db, "users", user.uid, "petrolLogs"));
+    const reservesSnap = await getDocs(
+      collection(db, "users", user.uid, "reserves")
+    );
+    const petrolSnap = await getDocs(
+      collection(db, "users", user.uid, "petrolLogs")
+    );
 
     const reserves = [];
     reservesSnap.forEach((doc) => reserves.push(doc.data()));
@@ -44,30 +41,38 @@ const Mileage = ({ user }) => {
       const before = reserves[i];
       const after = reserves[i + 1];
 
-      // Petrol between two reserves
-      const petrolBetween = petrols
-        .filter(
-          (p) =>
-            parseDate(p.date) > parseDate(before.date) &&
-            parseDate(p.date) < parseDate(after.date)
-        )
-        .pop();
+      // Find last petrol log between these two reserves
+      const between = petrols.filter(
+        (p) =>
+          parseDate(p.date) > parseDate(before.date) &&
+          parseDate(p.date) < parseDate(after.date)
+      );
 
-      // Always push raw data to table
+      let petrolBetween = between.length > 0 ? between[between.length - 1] : null;
+
       let mileage = "-";
+      let litresDisplay = "-";
+
       if (petrolBetween) {
+        litresDisplay = petrolBetween.litres; // raw value (string or number)
         const beforeKM = toNumber(before.km);
         const afterKM = toNumber(after.km);
         const litres = toNumber(petrolBetween.litres);
 
-        if (!isNaN(beforeKM) && !isNaN(afterKM) && !isNaN(litres) && litres > 0) {
+        if (
+          !isNaN(beforeKM) &&
+          !isNaN(afterKM) &&
+          !isNaN(litres) &&
+          litres > 0 &&
+          afterKM > beforeKM
+        ) {
           mileage = ((afterKM - beforeKM) / litres).toFixed(2);
         }
       }
 
       tableRows.push({
         beforeKM: before.km || "-",
-        petrolLitres: petrolBetween ? petrolBetween.litres : "-",
+        petrolLitres: litresDisplay,
         afterKM: after.km || "-",
         mileage,
       });
@@ -75,6 +80,11 @@ const Mileage = ({ user }) => {
 
     setRows(tableRows);
   };
+
+  useEffect(() => {
+    if (user) fetchData();
+    // eslint-disable-next-line
+  }, [user]);
 
   return (
     <div
