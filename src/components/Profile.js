@@ -11,9 +11,12 @@ const Profile = () => {
   const [editing, setEditing] = useState(false);
   const [form, setForm] = useState({});
   const [newPassword, setNewPassword] = useState("");
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (user) fetchProfile();
+    if (user) {
+      fetchProfile();
+    }
     // eslint-disable-next-line
   }, [user]);
 
@@ -22,11 +25,14 @@ const Profile = () => {
       const docRef = doc(db, "users", user.uid);
       const docSnap = await getDoc(docRef);
       if (docSnap.exists()) {
-        setProfile(docSnap.data());
-        setForm(docSnap.data());
+        const data = docSnap.data();
+        setProfile(data);
+        setForm(data);
       }
     } catch (err) {
       console.error("Failed to fetch profile", err);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -43,23 +49,30 @@ const Profile = () => {
       alert("Profile updated!");
     } catch (err) {
       console.error("Error updating profile:", err);
+      alert("Failed to update profile!");
     }
   };
 
   const handlePasswordChange = async () => {
     try {
+      if (!newPassword) {
+        alert("Enter a new password");
+        return;
+      }
       await updatePassword(user, newPassword);
       alert("Password updated!");
       setNewPassword("");
     } catch (err) {
+      console.error("Error updating password:", err);
       alert("Error updating password: " + err.message);
     }
   };
 
-  if (!profile) return <p>Loading profile...</p>;
+  if (loading) return <p style={{ padding: 20 }}>Loading profile...</p>;
+  if (!profile) return <p style={{ padding: 20 }}>Profile not found.</p>;
 
   return (
-    <div style={{ padding: "20px", maxWidth: "600px" }}>
+    <div style={{ padding: "20px", maxWidth: "600px", margin: "auto" }}>
       <h2>👤 Profile Details</h2>
 
       {editing ? (
@@ -70,35 +83,40 @@ const Profile = () => {
             value={form.name || ""}
             placeholder="Name"
             onChange={handleEditChange}
-          /><br/>
+          />
+          <br />
           <input
             type="number"
             name="age"
             value={form.age || ""}
             placeholder="Age"
             onChange={handleEditChange}
-          /><br/>
+          />
+          <br />
           <input
             type="text"
             name="gender"
             value={form.gender || ""}
             placeholder="Gender"
             onChange={handleEditChange}
-          /><br/>
+          />
+          <br />
           <input
             type="text"
             name="mobile"
             value={form.mobile || ""}
             placeholder="Mobile"
             onChange={handleEditChange}
-          /><br/>
+          />
+          <br />
           <input
             type="number"
             name="bikeCount"
             value={form.bikeCount || ""}
             placeholder="No. of Bikes"
             onChange={handleEditChange}
-          /><br/>
+          />
+          <br />
           <button onClick={handleSaveProfile}>Save</button>
         </>
       ) : (
@@ -109,7 +127,6 @@ const Profile = () => {
           <p>📧 Email: {profile.email || user.email}</p>
           <p>📱 Contact: {profile.mobile || "-"}</p>
           <p>🏍️ Bike Count: {profile.bikeCount || "-"}</p>
-
           <button onClick={() => setEditing(true)}>✏️ Edit Profile</button>
         </>
       )}
