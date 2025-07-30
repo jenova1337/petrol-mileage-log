@@ -1,7 +1,4 @@
-import React, { useState, useEffect } from "react";
-import { collection, addDoc, getDocs } from "firebase/firestore";
-import useAuth from "../auth/useAuth";
-import { db } from "../firebase";
+// ...same imports
 import jsPDF from "jspdf";
 import "jspdf-autotable";
 
@@ -15,6 +12,8 @@ const PetrolPump = ({ user }) => {
   const [log, setLog] = useState([]);
   const [bikes, setBikes] = useState([]);
 
+  const [selectedBikeForLogs, setSelectedBikeForLogs] = useState("");
+
   useEffect(() => {
     if (currentUser) {
       fetchBikes();
@@ -23,28 +22,21 @@ const PetrolPump = ({ user }) => {
   }, [currentUser]);
 
   const fetchBikes = async () => {
-    const querySnapshot = await getDocs(
-      collection(db, "users", currentUser.uid, "bikes")
-    );
-    const bikeArr = [];
-    querySnapshot.forEach((doc) => bikeArr.push(doc.data()));
-    setBikes(bikeArr);
+    const q = await getDocs(collection(db, "users", currentUser.uid, "bikes"));
+    const arr = [];
+    q.forEach((doc) => arr.push(doc.data()));
+    setBikes(arr);
   };
 
   const fetchLogs = async () => {
-    const snapshot = await getDocs(
-      collection(db, "users", currentUser.uid, "petrolLogs")
-    );
-    const logs = [];
-    snapshot.forEach((doc) => logs.push(doc.data()));
-    setLog(logs);
+    const q = await getDocs(collection(db, "users", currentUser.uid, "petrolLogs"));
+    const arr = [];
+    q.forEach((doc) => arr.push(doc.data()));
+    setLog(arr);
   };
 
   const handleSave = async () => {
-    if (!bike || !rate || !amount || !km) {
-      alert("Please fill all fields");
-      return;
-    }
+    if (!bike || !rate || !amount || !km) return alert("Fill all fields");
 
     const litresValue = parseFloat(amount) / parseFloat(rate);
 
@@ -57,31 +49,21 @@ const PetrolPump = ({ user }) => {
       km: parseFloat(km),
     };
 
-    try {
-      await addDoc(
-        collection(db, "users", currentUser.uid, "petrolLogs"),
-        entry
-      );
-      setLog((prev) => [...prev, entry]);
-      setBike("");
-      setRate("");
-      setAmount("");
-      setKm("");
-    } catch (err) {
-      console.error("Error saving petrol log:", err);
-    }
+    await addDoc(collection(db, "users", currentUser.uid, "petrolLogs"), entry);
+    setLog((prev) => [...prev, entry]);
+    setBike("");
+    setRate("");
+    setAmount("");
+    setKm("");
   };
 
-  const totalAmount = log.reduce(
-    (acc, curr) => acc + (parseFloat(curr.amount) || 0),
-    0
-  );
+  const filteredLogs = log.filter((entry) => entry.bike === selectedBikeForLogs);
 
   const handleDownloadPDF = () => {
     const doc = new jsPDF();
     doc.text("Petrol Fill Log", 14, 10);
 
-    const rows = log.map((entry, index) => [
+    const rows = filteredLogs.map((entry, index) => [
       index + 1,
       entry.date,
       entry.bike,
@@ -101,31 +83,22 @@ const PetrolPump = ({ user }) => {
     doc.save("PetrolLog.pdf");
   };
 
+  const totalAmount = filteredLogs.reduce(
+    (acc, curr) => acc + (parseFloat(curr.amount) || 0),
+    0
+  );
+
   return (
-    <div
-      style={{
-        padding: "20px",
-        backgroundColor: "#f1f8e9",
-        border: "2px solid #81c784",
-        borderRadius: "10px",
-        maxWidth: "800px",
-        margin: "auto",
-      }}
-    >
+    <div style={{ padding: "20px", maxWidth: "800px", margin: "auto" }}>
       <h3>⛽ Petrol Pump Log</h3>
 
+      {/* Input Section */}
       <select
         value={bike}
         onChange={(e) => setBike(e.target.value)}
-        style={{
-          marginBottom: "10px",
-          padding: "6px",
-          width: "100%",
-          border: "1px solid #ccc",
-          borderRadius: "6px",
-        }}
+        style={{ display: "block", padding: "6px", width: "100%", marginBottom: "10px" }}
       >
-        <option value="">Select Bike</option>
+        <option value="">Select Bike (to Add)</option>
         {bikes.map((b, i) => (
           <option key={i} value={b.name}>
             {b.name}
@@ -138,90 +111,88 @@ const PetrolPump = ({ user }) => {
         placeholder="Petrol Rate ₹"
         value={rate}
         onChange={(e) => setRate(e.target.value)}
-        style={{
-          marginBottom: "10px",
-          padding: "6px",
-          width: "100%",
-          border: "1px solid #ccc",
-          borderRadius: "6px",
-        }}
+        style={{ marginBottom: "10px", display: "block", padding: "6px", width: "100%" }}
       />
       <input
         type="number"
         placeholder="Amount ₹"
         value={amount}
         onChange={(e) => setAmount(e.target.value)}
-        style={{
-          marginBottom: "10px",
-          padding: "6px",
-          width: "100%",
-          border: "1px solid #ccc",
-          borderRadius: "6px",
-        }}
+        style={{ marginBottom: "10px", display: "block", padding: "6px", width: "100%" }}
       />
       <input
         type="number"
         placeholder="Current KM"
         value={km}
         onChange={(e) => setKm(e.target.value)}
-        style={{
-          marginBottom: "10px",
-          padding: "6px",
-          width: "100%",
-          border: "1px solid #ccc",
-          borderRadius: "6px",
-        }}
+        style={{ marginBottom: "10px", display: "block", padding: "6px", width: "100%" }}
       />
+      <button onClick={handleSave}>Save</button>
 
-      <button onClick={handleSave} style={{ marginBottom: "15px" }}>
-        Save
-      </button>
+      {/* Logs Section */}
+      <div
+        style={{
+          marginTop: "20px",
+          padding: "15px",
+          border: "2px solid #81d4fa",
+          borderRadius: "10px",
+          backgroundColor: "#e1f5fe",
+        }}
+      >
+        <h4>📋 Petrol Logs</h4>
 
-      <h4>📋 Petrol Logs</h4>
-      {log.length > 0 ? (
-        <>
-          <table
-            border="1"
-            cellPadding="6"
-            style={{ borderCollapse: "collapse", width: "100%" }}
-          >
-            <thead>
-              <tr>
-                <th>S.No</th>
-                <th>Date</th>
-                <th>Bike</th>
-                <th>Rate ₹</th>
-                <th>Amount ₹</th>
-                <th>Litres</th>
-                <th>KM</th>
-              </tr>
-            </thead>
-            <tbody>
-              {log.map((entry, index) => (
-                <tr key={index}>
-                  <td>{index + 1}</td>
-                  <td>{entry.date}</td>
-                  <td>{entry.bike}</td>
-                  <td>{entry.rate}</td>
-                  <td>{entry.amount}</td>
-                  <td>{entry.litres}</td>
-                  <td>{entry.km}</td>
+        <select
+          value={selectedBikeForLogs}
+          onChange={(e) => setSelectedBikeForLogs(e.target.value)}
+          style={{ marginBottom: "10px", display: "block", padding: "6px", width: "100%" }}
+        >
+          <option value="">Select Bike to View Logs</option>
+          {bikes.map((b, i) => (
+            <option key={i} value={b.name}>
+              {b.name}
+            </option>
+          ))}
+        </select>
+
+        {selectedBikeForLogs === "" ? (
+          <p>ℹ️ Select a bike to view petrol logs.</p>
+        ) : filteredLogs.length === 0 ? (
+          <p>📭 No petrol logs found for this bike.</p>
+        ) : (
+          <>
+            <table border="1" cellPadding="6" style={{ borderCollapse: "collapse", width: "100%" }}>
+              <thead>
+                <tr>
+                  <th>S.No</th>
+                  <th>Date</th>
+                  <th>Bike</th>
+                  <th>Rate ₹</th>
+                  <th>Amount ₹</th>
+                  <th>Litres</th>
+                  <th>KM</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-          <p>
-            <strong>💰 Total Petrol ₹:</strong> ₹{totalAmount.toFixed(2)}
-          </p>
-          <button onClick={handleDownloadPDF} style={{ marginTop: 10 }}>
-            📄 Download PDF
-          </button>
-        </>
-      ) : (
-        <p style={{ margin: 0 }}>
-          Select a bike and save entries to view petrol logs.
-        </p>
-      )}
+              </thead>
+              <tbody>
+                {filteredLogs.map((entry, index) => (
+                  <tr key={index}>
+                    <td>{index + 1}</td>
+                    <td>{entry.date}</td>
+                    <td>{entry.bike}</td>
+                    <td>{entry.rate}</td>
+                    <td>{entry.amount}</td>
+                    <td>{entry.litres}</td>
+                    <td>{entry.km}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+            <p>
+              <strong>💰 Total Petrol ₹:</strong> ₹{totalAmount.toFixed(2)}
+            </p>
+            <button onClick={handleDownloadPDF}>📄 Download PDF</button>
+          </>
+        )}
+      </div>
     </div>
   );
 };

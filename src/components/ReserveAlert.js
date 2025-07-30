@@ -8,6 +8,9 @@ const ReserveAlert = ({ user }) => {
   const [bikes, setBikes] = useState([]);
   const [logs, setLogs] = useState([]);
 
+  // For log viewing
+  const [selectedBikeForLogs, setSelectedBikeForLogs] = useState("");
+
   useEffect(() => {
     if (user) {
       fetchBikes();
@@ -48,32 +51,20 @@ const ReserveAlert = ({ user }) => {
     }
   };
 
+  // Filter logs by selected bike
+  const filteredLogs = logs.filter((log) => log.bike === selectedBikeForLogs);
+
   return (
-    <div
-      style={{
-        padding: "20px",
-        backgroundColor: "#fff8e1",
-        border: "2px solid #ffcc80",
-        borderRadius: "10px",
-        maxWidth: "800px",
-        margin: "auto",
-      }}
-    >
+    <div style={{ padding: "20px", maxWidth: "700px", margin: "auto" }}>
       <h3>🔔 Reserve Alert</h3>
 
+      {/* Form Section */}
       <select
         value={bike}
         onChange={(e) => setBike(e.target.value)}
-        style={{
-          marginBottom: "10px",
-          display: "block",
-          padding: "6px",
-          width: "100%",
-          border: "1px solid #ccc",
-          borderRadius: "6px",
-        }}
+        style={{ marginBottom: "10px", display: "block", padding: "6px", width: "100%" }}
       >
-        <option value="">Select Bike</option>
+        <option value="">Select Bike (to Add)</option>
         {bikes.map((b, i) => (
           <option key={i} value={b.name}>
             {b.name}
@@ -86,47 +77,63 @@ const ReserveAlert = ({ user }) => {
         placeholder="Enter Reserve KM"
         value={reserveKM}
         onChange={(e) => setReserveKM(e.target.value)}
-        style={{
-          marginBottom: "10px",
-          display: "block",
-          padding: "6px",
-          width: "100%",
-          border: "1px solid #ccc",
-          borderRadius: "6px",
-        }}
+        style={{ marginBottom: "10px", display: "block", padding: "6px", width: "100%" }}
       />
 
-      <button onClick={handleSave} style={{ marginBottom: "15px" }}>Save</button>
+      <button onClick={handleSave}>Save</button>
 
-      <h4>📋 Reserve Logs</h4>
-      {logs.length > 0 ? (
-        <table
-          border="1"
-          cellPadding="6"
-          style={{ borderCollapse: "collapse", width: "100%" }}
+      {/* Logs Section */}
+      <div
+        style={{
+          marginTop: "20px",
+          padding: "15px",
+          border: "2px solid #ffcc80",
+          borderRadius: "10px",
+          backgroundColor: "#fff8e1",
+        }}
+      >
+        <h4>📋 Reserve Logs</h4>
+
+        <select
+          value={selectedBikeForLogs}
+          onChange={(e) => setSelectedBikeForLogs(e.target.value)}
+          style={{ marginBottom: "10px", display: "block", padding: "6px", width: "100%" }}
         >
-          <thead>
-            <tr>
-              <th>S.No</th>
-              <th>Date</th>
-              <th>Bike</th>
-              <th>KM</th>
-            </tr>
-          </thead>
-          <tbody>
-            {logs.map((entry, idx) => (
-              <tr key={idx}>
-                <td>{idx + 1}</td>
-                <td>{entry.date}</td>
-                <td>{entry.bike}</td>
-                <td>{entry.km}</td>
+          <option value="">Select Bike to View Logs</option>
+          {bikes.map((b, i) => (
+            <option key={i} value={b.name}>
+              {b.name}
+            </option>
+          ))}
+        </select>
+
+        {selectedBikeForLogs === "" ? (
+          <p>ℹ️ Select a bike to view logs.</p>
+        ) : filteredLogs.length === 0 ? (
+          <p>📭 No reserve logs yet for this bike.</p>
+        ) : (
+          <table border="1" cellPadding="6" style={{ borderCollapse: "collapse", width: "100%" }}>
+            <thead>
+              <tr>
+                <th>S.No</th>
+                <th>Date</th>
+                <th>Bike</th>
+                <th>KM</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
-      ) : (
-        <p style={{ margin: 0 }}>Select a bike and save to view logs.</p>
-      )}
+            </thead>
+            <tbody>
+              {filteredLogs.map((entry, idx) => (
+                <tr key={idx}>
+                  <td>{idx + 1}</td>
+                  <td>{entry.date}</td>
+                  <td>{entry.bike}</td>
+                  <td>{entry.km}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
+      </div>
     </div>
   );
 };
