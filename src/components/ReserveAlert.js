@@ -16,35 +16,63 @@ const ReserveAlert = ({ user }) => {
   }, [user]);
 
   const fetchBikes = async () => {
-    const snap = await getDocs(collection(db, "users", user.uid, "bikes"));
-    const arr = [];
-    snap.forEach((doc) => arr.push(doc.data()));
-    setBikes(arr);
+    const querySnapshot = await getDocs(collection(db, "users", user.uid, "bikes"));
+    const bikeArr = [];
+    querySnapshot.forEach((doc) => bikeArr.push(doc.data()));
+    setBikes(bikeArr);
   };
 
   const fetchReserves = async () => {
-    const snap = await getDocs(collection(db, "users", user.uid, "reserves"));
-    const arr = [];
-    snap.forEach((doc) => arr.push(doc.data()));
-    setLogs(arr);
+    const snapshot = await getDocs(collection(db, "users", user.uid, "reserves"));
+    const items = [];
+    snapshot.forEach((doc) => items.push(doc.data()));
+    setLogs(items);
   };
 
   const handleSave = async () => {
     if (!bike || !reserveKM) return alert("Please select bike and enter KM");
-    const entry = { bike, km: reserveKM, date: new Date().toISOString() };
-    await addDoc(collection(db, "users", user.uid, "reserves"), entry);
-    setLogs((prev) => [...prev, entry]);
-    setReserveKM("");
-    setBike("");
+
+    const entry = {
+      bike,
+      km: reserveKM,
+      date: new Date().toLocaleString(),
+    };
+
+    try {
+      await addDoc(collection(db, "users", user.uid, "reserves"), entry);
+      setLogs((prev) => [...prev, entry]);
+      setReserveKM("");
+      setBike("");
+    } catch (err) {
+      console.error("Error saving reserve:", err);
+    }
   };
 
-  const filtered = logs.filter((l) => l.bike === bike);
-
   return (
-    <div style={{ padding: 20 }}>
+    <div
+      style={{
+        padding: "20px",
+        backgroundColor: "#fff8e1",
+        border: "2px solid #ffcc80",
+        borderRadius: "10px",
+        maxWidth: "800px",
+        margin: "auto",
+      }}
+    >
       <h3>🔔 Reserve Alert</h3>
 
-      <select value={bike} onChange={(e) => setBike(e.target.value)}>
+      <select
+        value={bike}
+        onChange={(e) => setBike(e.target.value)}
+        style={{
+          marginBottom: "10px",
+          display: "block",
+          padding: "6px",
+          width: "100%",
+          border: "1px solid #ccc",
+          borderRadius: "6px",
+        }}
+      >
         <option value="">Select Bike</option>
         {bikes.map((b, i) => (
           <option key={i} value={b.name}>
@@ -52,24 +80,31 @@ const ReserveAlert = ({ user }) => {
           </option>
         ))}
       </select>
-      <br />
 
       <input
         type="number"
         placeholder="Enter Reserve KM"
         value={reserveKM}
         onChange={(e) => setReserveKM(e.target.value)}
+        style={{
+          marginBottom: "10px",
+          display: "block",
+          padding: "6px",
+          width: "100%",
+          border: "1px solid #ccc",
+          borderRadius: "6px",
+        }}
       />
-      <br />
-      <button onClick={handleSave}>Save</button>
 
-      <h4 style={{ marginTop: 20 }}>📋 Reserve Logs</h4>
-      {!bike ? (
-        <p>Select a bike to see reserve logs.</p>
-      ) : filtered.length === 0 ? (
-        <p>No reserve logs for this bike.</p>
-      ) : (
-        <table border="1" cellPadding="6" style={{ borderCollapse: "collapse" }}>
+      <button onClick={handleSave} style={{ marginBottom: "15px" }}>Save</button>
+
+      <h4>📋 Reserve Logs</h4>
+      {logs.length > 0 ? (
+        <table
+          border="1"
+          cellPadding="6"
+          style={{ borderCollapse: "collapse", width: "100%" }}
+        >
           <thead>
             <tr>
               <th>S.No</th>
@@ -79,7 +114,7 @@ const ReserveAlert = ({ user }) => {
             </tr>
           </thead>
           <tbody>
-            {filtered.map((entry, idx) => (
+            {logs.map((entry, idx) => (
               <tr key={idx}>
                 <td>{idx + 1}</td>
                 <td>{entry.date}</td>
@@ -89,6 +124,8 @@ const ReserveAlert = ({ user }) => {
             ))}
           </tbody>
         </table>
+      ) : (
+        <p style={{ margin: 0 }}>Select a bike and save to view logs.</p>
       )}
     </div>
   );
