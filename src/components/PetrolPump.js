@@ -1,17 +1,21 @@
-// ...same imports
+import React, { useState, useEffect } from "react";
+import { collection, addDoc, getDocs } from "firebase/firestore";
+import { db } from "../firebase";
+import useAuth from "../auth/useAuth";
 import jsPDF from "jspdf";
 import "jspdf-autotable";
 
 const PetrolPump = ({ user }) => {
+  // Safe user selection
   const { user: authUser } = useAuth();
   const currentUser = user || authUser;
+
   const [bike, setBike] = useState("");
   const [rate, setRate] = useState("");
   const [amount, setAmount] = useState("");
   const [km, setKm] = useState("");
   const [log, setLog] = useState([]);
   const [bikes, setBikes] = useState([]);
-
   const [selectedBikeForLogs, setSelectedBikeForLogs] = useState("");
 
   useEffect(() => {
@@ -22,21 +26,36 @@ const PetrolPump = ({ user }) => {
   }, [currentUser]);
 
   const fetchBikes = async () => {
-    const q = await getDocs(collection(db, "users", currentUser.uid, "bikes"));
-    const arr = [];
-    q.forEach((doc) => arr.push(doc.data()));
-    setBikes(arr);
+    try {
+      const querySnapshot = await getDocs(
+        collection(db, "users", currentUser.uid, "bikes")
+      );
+      const bikeArr = [];
+      querySnapshot.forEach((doc) => bikeArr.push(doc.data()));
+      setBikes(bikeArr);
+    } catch (err) {
+      console.error("Error fetching bikes:", err);
+    }
   };
 
   const fetchLogs = async () => {
-    const q = await getDocs(collection(db, "users", currentUser.uid, "petrolLogs"));
-    const arr = [];
-    q.forEach((doc) => arr.push(doc.data()));
-    setLog(arr);
+    try {
+      const snapshot = await getDocs(
+        collection(db, "users", currentUser.uid, "petrolLogs")
+      );
+      const logs = [];
+      snapshot.forEach((doc) => logs.push(doc.data()));
+      setLog(logs);
+    } catch (err) {
+      console.error("Error fetching petrol logs:", err);
+    }
   };
 
   const handleSave = async () => {
-    if (!bike || !rate || !amount || !km) return alert("Fill all fields");
+    if (!bike || !rate || !amount || !km) {
+      alert("Please fill all fields");
+      return;
+    }
 
     const litresValue = parseFloat(amount) / parseFloat(rate);
 
@@ -49,16 +68,22 @@ const PetrolPump = ({ user }) => {
       km: parseFloat(km),
     };
 
-    await addDoc(collection(db, "users", currentUser.uid, "petrolLogs"), entry);
-    setLog((prev) => [...prev, entry]);
-    setBike("");
-    setRate("");
-    setAmount("");
-    setKm("");
+    try {
+      await addDoc(collection(db, "users", currentUser.uid, "petrolLogs"), entry);
+      setLog((prev) => [...prev, entry]);
+      setBike("");
+      setRate("");
+      setAmount("");
+      setKm("");
+    } catch (err) {
+      console.error("Error saving petrol log:", err);
+    }
   };
 
+  // Filter logs by selected bike for viewing
   const filteredLogs = log.filter((entry) => entry.bike === selectedBikeForLogs);
 
+  // Download filtered logs as PDF
   const handleDownloadPDF = () => {
     const doc = new jsPDF();
     doc.text("Petrol Fill Log", 14, 10);
@@ -96,7 +121,12 @@ const PetrolPump = ({ user }) => {
       <select
         value={bike}
         onChange={(e) => setBike(e.target.value)}
-        style={{ display: "block", padding: "6px", width: "100%", marginBottom: "10px" }}
+        style={{
+          display: "block",
+          padding: "6px",
+          width: "100%",
+          marginBottom: "10px",
+        }}
       >
         <option value="">Select Bike (to Add)</option>
         {bikes.map((b, i) => (
@@ -111,22 +141,38 @@ const PetrolPump = ({ user }) => {
         placeholder="Petrol Rate ₹"
         value={rate}
         onChange={(e) => setRate(e.target.value)}
-        style={{ marginBottom: "10px", display: "block", padding: "6px", width: "100%" }}
+        style={{
+          marginBottom: "10px",
+          display: "block",
+          padding: "6px",
+          width: "100%",
+        }}
       />
       <input
         type="number"
         placeholder="Amount ₹"
         value={amount}
         onChange={(e) => setAmount(e.target.value)}
-        style={{ marginBottom: "10px", display: "block", padding: "6px", width: "100%" }}
+        style={{
+          marginBottom: "10px",
+          display: "block",
+          padding: "6px",
+          width: "100%",
+        }}
       />
       <input
         type="number"
         placeholder="Current KM"
         value={km}
         onChange={(e) => setKm(e.target.value)}
-        style={{ marginBottom: "10px", display: "block", padding: "6px", width: "100%" }}
+        style={{
+          marginBottom: "10px",
+          display: "block",
+          padding: "6px",
+          width: "100%",
+        }}
       />
+
       <button onClick={handleSave}>Save</button>
 
       {/* Logs Section */}
@@ -144,7 +190,12 @@ const PetrolPump = ({ user }) => {
         <select
           value={selectedBikeForLogs}
           onChange={(e) => setSelectedBikeForLogs(e.target.value)}
-          style={{ marginBottom: "10px", display: "block", padding: "6px", width: "100%" }}
+          style={{
+            marginBottom: "10px",
+            display: "block",
+            padding: "6px",
+            width: "100%",
+          }}
         >
           <option value="">Select Bike to View Logs</option>
           {bikes.map((b, i) => (
@@ -160,7 +211,11 @@ const PetrolPump = ({ user }) => {
           <p>📭 No petrol logs found for this bike.</p>
         ) : (
           <>
-            <table border="1" cellPadding="6" style={{ borderCollapse: "collapse", width: "100%" }}>
+            <table
+              border="1"
+              cellPadding="6"
+              style={{ borderCollapse: "collapse", width: "100%" }}
+            >
               <thead>
                 <tr>
                   <th>S.No</th>
