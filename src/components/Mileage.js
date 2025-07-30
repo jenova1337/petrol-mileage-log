@@ -3,25 +3,32 @@ import { db } from "../firebase";
 import { collection, getDocs } from "firebase/firestore";
 
 const Mileage = ({ user }) => {
+  const [bikeId, setBikeId] = useState("");
+  const [bikes, setBikes] = useState([]);
   const [rows, setRows] = useState([]);
 
-  const parseDate = (value) => {
-    if (!value) return new Date(0);
-    if (typeof value === "object" && value.seconds) {
-      return new Date(value.seconds * 1000);
-    }
-    return new Date(value);
-  };
+  const parseDate = (v) =>
+    v && v.seconds ? new Date(v.seconds * 1000) : new Date(v);
 
   const toNum = (val) => {
-    if (val === undefined || val === null || val === "") return NaN;
-    const n = typeof val === "string" ? parseFloat(val) : Number(val);
+    const n = parseFloat(val);
     return isNaN(n) ? NaN : n;
   };
 
-  const fetchData = async () => {
-    const reservesSnap = await getDocs(collection(db, "users", user.uid, "reserves"));
-    const petrolSnap = await getDocs(collection(db, "users", user.uid, "petrolLogs"));
+  const fetchBikes = async () => {
+    const snap = await getDocs(collection(db, "users", user.uid, "bikes"));
+    const arr = [];
+    snap.forEach((doc) => arr.push({ id: doc.id, ...doc.data() }));
+    setBikes(arr);
+  };
+
+  const fetchData = async (bikeId) => {
+    const reservesSnap = await getDocs(
+      collection(db, "users", user.uid, "bikes", bikeId, "reserves")
+    );
+    const petrolSnap = await getDocs(
+      collection(db, "users", user.uid, "bikes", bikeId, "petrolLogs")
+    );
 
     const reserves = [];
     reservesSnap.forEach((doc) => reserves.push(doc.data()));
@@ -32,38 +39,24 @@ const Mileage = ({ user }) => {
     petrols.sort((a, b) => parseDate(a.date) - parseDate(b.date));
 
     const table = [];
-
     for (let i = 0; i < reserves.length - 1; i++) {
       const before = reserves[i];
       const after = reserves[i + 1];
-
-      // All petrol logs between these two reserves
-      const logsInBetween = petrols.filter(
-        (p) =>
-          parseDate(p.date) > parseDate(before.date) &&
-          parseDate(p.date) < parseDate(after.date)
+      const logs = petrols.filter(
+        (p) => parseDate(p.date) > parseDate(before.date) &&
+               parseDate(p.date) < parseDate(after.date)
       );
-
-      const petrolBetween =
-        logsInBetween.length > 0 ? logsInBetween[logsInBetween.length - 1] : null;
+      const petrol = logs.length > 0 ? logs[logs.length - 1] : null;
 
       let mileage = "-";
-      let litresShow = "-";
+      let litresShow = petrol ? petrol.litres : "-";
 
-      if (petrolBetween) {
-        litresShow = petrolBetween.litres ?? "-";
-
+      if (petrol) {
         const beforeKM = toNum(before.km);
         const afterKM = toNum(after.km);
-        const litres = toNum(petrolBetween.litres);
+        const litres = toNum(petrol.litres);
 
-        if (
-          !isNaN(beforeKM) &&
-          !isNaN(afterKM) &&
-          !isNaN(litres) &&
-          litres > 0 &&
-          afterKM > beforeKM
-        ) {
+        if (!isNaN(beforeKM) && !isNaN(afterKM) && !isNaN(litres) && litres > 0) {
           mileage = ((afterKM - beforeKM) / litres).toFixed(2);
         }
       }
@@ -75,42 +68,49 @@ const Mileage = ({ user }) => {
         mileage,
       });
     }
-
     setRows(table);
   };
 
   useEffect(() => {
-    if (user) fetchData();
-    // eslint-disable-next-line
+    if (user) fetchBikes();
   }, [user]);
 
   return (
-    <div
-      style={{
-        padding: "20px",
-        backgroundColor: "#e1f5fe",
-        border: "2px solid #81d4fa",
-        borderRadius: "10px",
-        maxWidth: "800px",
-        margin: "auto",
-      }}
-    >
-      <h3>📊 Mileage Report</h3>
-      {rows.length > 0 ? (
-        <table border="1" cellPadding="6" style={{ borderCollapse: "collapse" }}>
+    <div style={{ padding: 20 }}>
+      <h3>📊 Mileage</h3>
+
+      <select
+        value={bikeId}
+        onChange={(e) => {
+          setBikeId(e.target.value);
+          fetchData(e.target.value);
+        }}
+      >
+        <option value="">Select Bike</option>
+        {bikes.map((b) => (
+          <option key={b.id} value={b.id}>
+            {b.name}
+          </option>
+        ))}
+      </select>
+
+      {rows.length === 0 ? (
+        <p>No data yet.</p>
+      ) : (
+        <table border="1" cellPadding="6" style={{ marginTop: 20 }}>
           <thead>
             <tr>
               <th>S.No</th>
               <th>Before Reserve KM</th>
               <th>Petrol Poured (L)</th>
               <th>After Reserve KM</th>
-              <th>KM/Litre</th>
+              <th>Mileage</th>
             </tr>
           </thead>
           <tbody>
-            {rows.map((r, idx) => (
-              <tr key={idx}>
-                <td>{idx + 1}</td>
+            {rows.map((r, i) => (
+              <tr key={i}>
+                <td>{i + 1}</td>
                 <td>{r.beforeKM}</td>
                 <td>{r.petrolLitres}</td>
                 <td>{r.afterKM}</td>
@@ -119,8 +119,6 @@ const Mileage = ({ user }) => {
             ))}
           </tbody>
         </table>
-      ) : (
-        <p>📭 No Reserve + Petrol entries found.</p>
       )}
     </div>
   );

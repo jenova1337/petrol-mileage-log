@@ -1,10 +1,8 @@
 import React, { useEffect, useState } from "react";
-import { collection, addDoc, getDocs } from "firebase/firestore";
+import { collection, doc, setDoc, getDocs } from "firebase/firestore";
 import { db } from "../firebase";
-import useAuth from "../auth/useAuth";
 
-const AddBike = () => {
-  const { user } = useAuth();
+const AddBike = ({ user }) => {
   const [bike, setBike] = useState({
     name: "",
     model: "",
@@ -22,15 +20,13 @@ const AddBike = () => {
   }, [user]);
 
   const fetchBikes = async () => {
-    try {
-      const userBikesRef = collection(db, "users", user.uid, "bikes");
-      const querySnapshot = await getDocs(userBikesRef);
-      const bikes = [];
-      querySnapshot.forEach((doc) => bikes.push(doc.data()));
-      setBikeList(bikes);
-    } catch (err) {
-      console.error("Error fetching bikes:", err);
-    }
+    const ref = collection(db, "users", user.uid, "bikes");
+    const snap = await getDocs(ref);
+    const bikes = [];
+    snap.forEach((docItem) => {
+      bikes.push({ id: docItem.id, ...docItem.data() }); // include ID
+    });
+    setBikeList(bikes);
   };
 
   const handleChange = (e) => {
@@ -38,15 +34,18 @@ const AddBike = () => {
   };
 
   const handleAddBike = async () => {
-    const { name, model, km, date } = bike;
-    if (!name || !model || !km || !date) {
-      alert("Please fill required fields: Name, Model, KM, Purchase Date");
+    if (!bike.name || !bike.model || !bike.km || !bike.date) {
+      alert("Please fill Name, Model, KM, and Purchase Date");
       return;
     }
 
     try {
-      const userBikesRef = collection(db, "users", user.uid, "bikes");
-      await addDoc(userBikesRef, bike);
+      // create a custom id (bike name + timestamp)
+      const bikeId = `${bike.name}_${Date.now()}`;
+      const bikeDoc = doc(db, "users", user.uid, "bikes", bikeId);
+
+      await setDoc(bikeDoc, bike); // store with that ID
+
       setBike({
         name: "",
         model: "",
@@ -57,6 +56,7 @@ const AddBike = () => {
         chassis: "",
         date: "",
       });
+
       fetchBikes();
     } catch (err) {
       console.error("Error adding bike:", err);
@@ -65,19 +65,28 @@ const AddBike = () => {
 
   return (
     <div style={{ padding: "20px" }}>
-      <h2>➕ Add Bike</h2>
+      <h2>🚲 Add Bike</h2>
 
-      <input type="text" name="name" placeholder="Bike Name" value={bike.name} onChange={handleChange} /><br />
-      <input type="text" name="model" placeholder="Model / Year" value={bike.model} onChange={handleChange} /><br />
-      <input type="text" name="km" placeholder="KM Reading" value={bike.km} onChange={handleChange} /><br />
-      <input type="text" name="color" placeholder="Color" value={bike.color} onChange={handleChange} /><br />
-      <input type="text" name="registration" placeholder="Registration No" value={bike.registration} onChange={handleChange} /><br />
-      <input type="text" name="engine" placeholder="Engine No (Optional)" value={bike.engine} onChange={handleChange} /><br />
-      <input type="text" name="chassis" placeholder="Chassis No (Optional)" value={bike.chassis} onChange={handleChange} /><br />
-      <label>Purchase Date:</label><br />
-      <input type="date" name="date" value={bike.date} onChange={handleChange} /><br />
+      <input type="text" name="name" placeholder="Bike Name"
+        value={bike.name} onChange={handleChange} /><br />
+      <input type="text" name="model" placeholder="Model / Year"
+        value={bike.model} onChange={handleChange} /><br />
+      <input type="text" name="km" placeholder="KM Reading"
+        value={bike.km} onChange={handleChange} /><br />
+      <input type="text" name="color" placeholder="Color"
+        value={bike.color} onChange={handleChange} /><br />
+      <input type="text" name="registration" placeholder="Registration No"
+        value={bike.registration} onChange={handleChange} /><br />
+      <input type="text" name="engine" placeholder="Engine No (Optional)"
+        value={bike.engine} onChange={handleChange} /><br />
+      <input type="text" name="chassis" placeholder="Chassis No (Optional)"
+        value={bike.chassis} onChange={handleChange} /><br />
+      <input type="date" name="date" value={bike.date}
+        onChange={handleChange} /><br />
 
-      <button onClick={handleAddBike} style={{ marginTop: "10px" }}>➕ Save Bike</button>
+      <button onClick={handleAddBike} style={{ marginTop: "10px" }}>
+        ➕ Save Bike
+      </button>
 
       <h4 style={{ marginTop: "20px" }}>📋 Your Bikes</h4>
       {bikeList.length === 0 ? (
@@ -85,7 +94,9 @@ const AddBike = () => {
       ) : (
         <ul>
           {bikeList.map((b, i) => (
-            <li key={i}>{b.name} – {b.model} – {b.km} KM</li>
+            <li key={b.id}>
+              <strong>{b.name}</strong> – {b.model} – {b.km} KM
+            </li>
           ))}
         </ul>
       )}
