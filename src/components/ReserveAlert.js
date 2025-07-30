@@ -7,9 +7,7 @@ const ReserveAlert = ({ user }) => {
   const [bike, setBike] = useState("");
   const [bikes, setBikes] = useState([]);
   const [logs, setLogs] = useState([]);
-
-  // For log viewing
-  const [selectedBikeForLogs, setSelectedBikeForLogs] = useState("");
+  const [selectedBike, setSelectedBike] = useState("");
 
   useEffect(() => {
     if (user) {
@@ -33,12 +31,16 @@ const ReserveAlert = ({ user }) => {
   };
 
   const handleSave = async () => {
-    if (!bike || !reserveKM) return alert("Please select bike and enter KM");
+    if (!bike || !reserveKM) {
+      alert("Please select bike and enter KM");
+      return;
+    }
 
+    // Store ISO date (important for Mileage calculation)
     const entry = {
       bike,
       km: reserveKM,
-      date: new Date().toLocaleString(),
+      date: new Date().toISOString(),
     };
 
     try {
@@ -51,55 +53,42 @@ const ReserveAlert = ({ user }) => {
     }
   };
 
-  // Filter logs by selected bike
-  const filteredLogs = logs.filter((log) => log.bike === selectedBikeForLogs);
+  // Filter logs for selected bike
+  const filteredLogs = selectedBike
+    ? logs.filter((l) => l.bike === selectedBike)
+    : [];
 
   return (
-    <div style={{ padding: "20px", maxWidth: "700px", margin: "auto" }}>
+    <div
+      style={{
+        maxWidth: "700px",
+        margin: "auto",
+        padding: "20px",
+      }}
+    >
       <h3>🔔 Reserve Alert</h3>
 
-      {/* Form Section */}
-      <select
-        value={bike}
-        onChange={(e) => setBike(e.target.value)}
-        style={{ marginBottom: "10px", display: "block", padding: "6px", width: "100%" }}
-      >
-        <option value="">Select Bike (to Add)</option>
-        {bikes.map((b, i) => (
-          <option key={i} value={b.name}>
-            {b.name}
-          </option>
-        ))}
-      </select>
-
-      <input
-        type="number"
-        placeholder="Enter Reserve KM"
-        value={reserveKM}
-        onChange={(e) => setReserveKM(e.target.value)}
-        style={{ marginBottom: "10px", display: "block", padding: "6px", width: "100%" }}
-      />
-
-      <button onClick={handleSave}>Save</button>
-
-      {/* Logs Section */}
+      {/* Top section for adding reserve */}
       <div
         style={{
-          marginTop: "20px",
-          padding: "15px",
+          padding: 15,
           border: "2px solid #ffcc80",
-          borderRadius: "10px",
+          borderRadius: 10,
           backgroundColor: "#fff8e1",
+          marginBottom: 20,
         }}
       >
-        <h4>📋 Reserve Logs</h4>
-
         <select
-          value={selectedBikeForLogs}
-          onChange={(e) => setSelectedBikeForLogs(e.target.value)}
-          style={{ marginBottom: "10px", display: "block", padding: "6px", width: "100%" }}
+          value={bike}
+          onChange={(e) => setBike(e.target.value)}
+          style={{
+            width: "100%",
+            padding: 8,
+            marginBottom: 10,
+            borderRadius: 6,
+          }}
         >
-          <option value="">Select Bike to View Logs</option>
+          <option value="">Select Bike</option>
           {bikes.map((b, i) => (
             <option key={i} value={b.name}>
               {b.name}
@@ -107,12 +96,59 @@ const ReserveAlert = ({ user }) => {
           ))}
         </select>
 
-        {selectedBikeForLogs === "" ? (
-          <p>ℹ️ Select a bike to view logs.</p>
+        <input
+          type="number"
+          placeholder="Enter Reserve KM"
+          value={reserveKM}
+          onChange={(e) => setReserveKM(e.target.value)}
+          style={{
+            width: "100%",
+            padding: 8,
+            marginBottom: 10,
+            borderRadius: 6,
+          }}
+        />
+
+        <button onClick={handleSave}>Save</button>
+      </div>
+
+      {/* Section to show logs by selecting bike */}
+      <div
+        style={{
+          padding: 15,
+          border: "2px solid #ffcc80",
+          borderRadius: 10,
+          backgroundColor: "#fff8e1",
+        }}
+      >
+        <select
+          value={selectedBike}
+          onChange={(e) => setSelectedBike(e.target.value)}
+          style={{
+            width: "100%",
+            padding: 8,
+            marginBottom: 10,
+            borderRadius: 6,
+          }}
+        >
+          <option value="">Select Bike to view logs</option>
+          {bikes.map((b, i) => (
+            <option key={i} value={b.name}>
+              {b.name}
+            </option>
+          ))}
+        </select>
+
+        {selectedBike === "" ? (
+          <p>ℹ️ Select a bike to view reserve logs.</p>
         ) : filteredLogs.length === 0 ? (
-          <p>📭 No reserve logs yet for this bike.</p>
+          <p>📭 No reserve logs for this bike.</p>
         ) : (
-          <table border="1" cellPadding="6" style={{ borderCollapse: "collapse", width: "100%" }}>
+          <table
+            border="1"
+            cellPadding="6"
+            style={{ borderCollapse: "collapse", width: "100%" }}
+          >
             <thead>
               <tr>
                 <th>S.No</th>
