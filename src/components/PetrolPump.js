@@ -3,7 +3,7 @@ import { collection, addDoc, getDocs } from "firebase/firestore";
 import { db } from "../firebase";
 import useAuth from "../auth/useAuth";
 import jsPDF from "jspdf";
-import "jspdf-autotable";
+import autoTable from "jspdf-autotable";
 
 const formatDateToIST = (isoString) => {
   if (!isoString) return "-";
@@ -83,6 +83,11 @@ const PetrolPump = ({ user }) => {
   const filteredLogs = log.filter((entry) => entry.bike === selectedBikeForLogs);
 
   const handleDownloadPDF = () => {
+    if (filteredLogs.length === 0) {
+      alert("No logs to export");
+      return;
+    }
+
     const doc = new jsPDF();
     doc.text("Petrol Fill Log", 14, 10);
 
@@ -96,7 +101,7 @@ const PetrolPump = ({ user }) => {
       entry.km,
     ]);
 
-    doc.autoTable({
+    autoTable(doc, {
       startY: 20,
       head: [["S.No", "Date", "Bike", "Rate ₹", "Amount ₹", "Litres", "KM"]],
       body: rows,

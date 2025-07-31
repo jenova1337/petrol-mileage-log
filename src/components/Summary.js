@@ -1,12 +1,12 @@
 import React, { useEffect, useState } from "react";
 import jsPDF from "jspdf";
-import "jspdf-autotable";
+import autoTable from "jspdf-autotable";
 import { collection, getDocs } from "firebase/firestore";
 import { db } from "../firebase";
-import useAuth from "../auth/useAuth"; // ✅ Correct use of useAuth
+import useAuth from "../auth/useAuth"; // Get current logged in user
 
 const Summary = () => {
-  const { user } = useAuth(); // ✅ Get current user
+  const { user } = useAuth();
   const [data, setData] = useState([]);
   const [weeklySummary, setWeeklySummary] = useState({});
   const [monthlySummary, setMonthlySummary] = useState({});
@@ -17,7 +17,9 @@ const Summary = () => {
   }, [user]);
 
   const fetchPetrolLogs = async () => {
-    const querySnapshot = await getDocs(collection(db, "users", user.uid, "petrolLogs"));
+    const querySnapshot = await getDocs(
+      collection(db, "users", user.uid, "petrolLogs")
+    );
     const logs = [];
     querySnapshot.forEach((doc) => logs.push(doc.data()));
     setData(logs);
@@ -39,12 +41,14 @@ const Summary = () => {
       const km = parseFloat(log.km || 0);
       const amount = parseFloat(log.amount || 0);
 
+      // Weekly
       if (logDate >= oneWeekAgo) {
         if (!weekly[log.bike]) weekly[log.bike] = { km: 0, amount: 0 };
         weekly[log.bike].km += km;
         weekly[log.bike].amount += amount;
       }
 
+      // Monthly
       if (logDate >= oneMonthAgo) {
         if (!monthly[log.bike]) monthly[log.bike] = { km: 0, amount: 0 };
         monthly[log.bike].km += km;
@@ -66,6 +70,11 @@ const Summary = () => {
   };
 
   const downloadSummaryPDF = () => {
+    if (!data || data.length === 0) {
+      alert("No summary data to download!");
+      return;
+    }
+
     const doc = new jsPDF();
     doc.text("Petrol Usage Summary", 14, 10);
 
@@ -85,14 +94,14 @@ const Summary = () => {
         log.km,
       ]);
 
-      doc.autoTable({
+      autoTable(doc, {
         startY: finalY,
         head: [["S.No", "Date", "Rate ₹", "Amount ₹", "Litres", "KM"]],
         body: rows,
         theme: "grid",
       });
 
-      finalY = doc.autoTable.previous.finalY + 10;
+      finalY = doc.lastAutoTable.finalY + 10;
     });
 
     doc.save("SummaryLog.pdf");
@@ -136,7 +145,10 @@ const Summary = () => {
         </div>
       ))}
 
-      <button onClick={() => setShowSummary(!showSummary)} style={{ marginTop: 10 }}>
+      <button
+        onClick={() => setShowSummary(!showSummary)}
+        style={{ marginTop: 10 }}
+      >
         {showSummary ? "Hide" : "Show"} Weekly & Monthly Summary
       </button>
 
