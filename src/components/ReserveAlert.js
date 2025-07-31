@@ -2,6 +2,19 @@ import React, { useState, useEffect } from "react";
 import { collection, addDoc, getDocs } from "firebase/firestore";
 import { db } from "../firebase";
 
+const formatDateToIST = (isoString) => {
+  if (!isoString) return "-";
+  const d = new Date(isoString);
+  return d.toLocaleString("en-IN", {
+    timeZone: "Asia/Kolkata",
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+};
+
 const ReserveAlert = ({ user }) => {
   const [reserveKM, setReserveKM] = useState("");
   const [bike, setBike] = useState("");
@@ -36,39 +49,26 @@ const ReserveAlert = ({ user }) => {
       return;
     }
 
-    // Store ISO date (important for Mileage calculation)
     const entry = {
       bike,
       km: reserveKM,
       date: new Date().toISOString(),
     };
 
-    try {
-      await addDoc(collection(db, "users", user.uid, "reserves"), entry);
-      setLogs((prev) => [...prev, entry]);
-      setReserveKM("");
-      setBike("");
-    } catch (err) {
-      console.error("Error saving reserve:", err);
-    }
+    await addDoc(collection(db, "users", user.uid, "reserves"), entry);
+    setLogs((prev) => [...prev, entry]);
+    setReserveKM("");
+    setBike("");
   };
 
-  // Filter logs for selected bike
   const filteredLogs = selectedBike
     ? logs.filter((l) => l.bike === selectedBike)
     : [];
 
   return (
-    <div
-      style={{
-        maxWidth: "700px",
-        margin: "auto",
-        padding: "20px",
-      }}
-    >
+    <div style={{ maxWidth: "700px", margin: "auto", padding: "20px" }}>
       <h3>🔔 Reserve Alert</h3>
 
-      {/* Top section for adding reserve */}
       <div
         style={{
           padding: 15,
@@ -112,7 +112,6 @@ const ReserveAlert = ({ user }) => {
         <button onClick={handleSave}>Save</button>
       </div>
 
-      {/* Section to show logs by selecting bike */}
       <div
         style={{
           padding: 15,
@@ -161,7 +160,7 @@ const ReserveAlert = ({ user }) => {
               {filteredLogs.map((entry, idx) => (
                 <tr key={idx}>
                   <td>{idx + 1}</td>
-                  <td>{entry.date}</td>
+                  <td>{formatDateToIST(entry.date)}</td>
                   <td>{entry.bike}</td>
                   <td>{entry.km}</td>
                 </tr>

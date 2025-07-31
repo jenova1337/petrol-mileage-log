@@ -5,8 +5,20 @@ import useAuth from "../auth/useAuth";
 import jsPDF from "jspdf";
 import "jspdf-autotable";
 
+const formatDateToIST = (isoString) => {
+  if (!isoString) return "-";
+  const d = new Date(isoString);
+  return d.toLocaleString("en-IN", {
+    timeZone: "Asia/Kolkata",
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+};
+
 const PetrolPump = ({ user }) => {
-  // Safe user selection
   const { user: authUser } = useAuth();
   const currentUser = user || authUser;
 
@@ -26,29 +38,21 @@ const PetrolPump = ({ user }) => {
   }, [currentUser]);
 
   const fetchBikes = async () => {
-    try {
-      const querySnapshot = await getDocs(
-        collection(db, "users", currentUser.uid, "bikes")
-      );
-      const bikeArr = [];
-      querySnapshot.forEach((doc) => bikeArr.push(doc.data()));
-      setBikes(bikeArr);
-    } catch (err) {
-      console.error("Error fetching bikes:", err);
-    }
+    const querySnapshot = await getDocs(
+      collection(db, "users", currentUser.uid, "bikes")
+    );
+    const bikeArr = [];
+    querySnapshot.forEach((doc) => bikeArr.push(doc.data()));
+    setBikes(bikeArr);
   };
 
   const fetchLogs = async () => {
-    try {
-      const snapshot = await getDocs(
-        collection(db, "users", currentUser.uid, "petrolLogs")
-      );
-      const logs = [];
-      snapshot.forEach((doc) => logs.push(doc.data()));
-      setLog(logs);
-    } catch (err) {
-      console.error("Error fetching petrol logs:", err);
-    }
+    const snapshot = await getDocs(
+      collection(db, "users", currentUser.uid, "petrolLogs")
+    );
+    const logs = [];
+    snapshot.forEach((doc) => logs.push(doc.data()));
+    setLog(logs);
   };
 
   const handleSave = async () => {
@@ -68,29 +72,23 @@ const PetrolPump = ({ user }) => {
       km: parseFloat(km),
     };
 
-    try {
-      await addDoc(collection(db, "users", currentUser.uid, "petrolLogs"), entry);
-      setLog((prev) => [...prev, entry]);
-      setBike("");
-      setRate("");
-      setAmount("");
-      setKm("");
-    } catch (err) {
-      console.error("Error saving petrol log:", err);
-    }
+    await addDoc(collection(db, "users", currentUser.uid, "petrolLogs"), entry);
+    setLog((prev) => [...prev, entry]);
+    setBike("");
+    setRate("");
+    setAmount("");
+    setKm("");
   };
 
-  // Filter logs by selected bike for viewing
   const filteredLogs = log.filter((entry) => entry.bike === selectedBikeForLogs);
 
-  // Download filtered logs as PDF
   const handleDownloadPDF = () => {
     const doc = new jsPDF();
     doc.text("Petrol Fill Log", 14, 10);
 
     const rows = filteredLogs.map((entry, index) => [
       index + 1,
-      entry.date,
+      formatDateToIST(entry.date),
       entry.bike,
       entry.rate,
       entry.amount,
@@ -117,7 +115,6 @@ const PetrolPump = ({ user }) => {
     <div style={{ padding: "20px", maxWidth: "800px", margin: "auto" }}>
       <h3>⛽ Petrol Pump Log</h3>
 
-      {/* Input Section */}
       <select
         value={bike}
         onChange={(e) => setBike(e.target.value)}
@@ -175,7 +172,6 @@ const PetrolPump = ({ user }) => {
 
       <button onClick={handleSave}>Save</button>
 
-      {/* Logs Section */}
       <div
         style={{
           marginTop: "20px",
@@ -231,7 +227,7 @@ const PetrolPump = ({ user }) => {
                 {filteredLogs.map((entry, index) => (
                   <tr key={index}>
                     <td>{index + 1}</td>
-                    <td>{entry.date}</td>
+                    <td>{formatDateToIST(entry.date)}</td>
                     <td>{entry.bike}</td>
                     <td>{entry.rate}</td>
                     <td>{entry.amount}</td>

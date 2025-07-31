@@ -2,12 +2,26 @@ import React, { useEffect, useState } from "react";
 import { db } from "../firebase";
 import { collection, getDocs } from "firebase/firestore";
 
+// Format date to Indian time (IST)
+const formatDateToIST = (isoString) => {
+  if (!isoString) return "-";
+  const d = new Date(isoString);
+  return d.toLocaleString("en-IN", {
+    timeZone: "Asia/Kolkata",
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+};
+
 const Mileage = ({ user }) => {
   const [bikes, setBikes] = useState([]);
   const [selectedBike, setSelectedBike] = useState("");
   const [rows, setRows] = useState([]);
 
-  // Helper: Convert Firestore date
+  // Convert Firestore date to JS Date
   const parseDate = (val) => {
     if (!val) return new Date(0);
     if (typeof val === "object" && val.seconds) {
@@ -16,14 +30,14 @@ const Mileage = ({ user }) => {
     return new Date(val);
   };
 
-  // Helper: Convert safely to number
+  // Convert value safely to number
   const toNum = (val) => {
     if (val === undefined || val === null || val === "") return NaN;
     const n = typeof val === "string" ? parseFloat(val) : Number(val);
     return isNaN(n) ? NaN : n;
   };
 
-  // Load bikes list on start
+  // Load bikes initially
   useEffect(() => {
     const fetchBikes = async () => {
       const bikeSnap = await getDocs(collection(db, "users", user.uid, "bikes"));
@@ -47,7 +61,7 @@ const Mileage = ({ user }) => {
       collection(db, "users", user.uid, "petrolLogs")
     );
 
-    // Filter only selected bike
+    // Filter by bike
     const reserves = [];
     reservesSnap.forEach((doc) => {
       const data = doc.data();
@@ -64,20 +78,22 @@ const Mileage = ({ user }) => {
 
     const table = [];
 
+    // Loop through reserve pairs
     for (let i = 0; i < reserves.length - 1; i++) {
       const before = reserves[i];
       const after = reserves[i + 1];
 
-      // Petrol logs between 2 reserves
+      // Petrol logs between these two reserve points
       const logsInBetween = petrols.filter(
         (p) =>
           parseDate(p.date) > parseDate(before.date) &&
           parseDate(p.date) < parseDate(after.date)
       );
 
-      // Use the last petrol log between these reserves
       const petrolBetween =
-        logsInBetween.length > 0 ? logsInBetween[logsInBetween.length - 1] : null;
+        logsInBetween.length > 0
+          ? logsInBetween[logsInBetween.length - 1]
+          : null;
 
       let mileage = "-";
       let litresShow = "-";
@@ -100,7 +116,9 @@ const Mileage = ({ user }) => {
         }
       }
 
+      // Push row data, include date column
       table.push({
+        date: after.date,
         beforeKM: before.km || "-",
         petrolLitres: litresShow,
         afterKM: after.km || "-",
@@ -117,16 +135,9 @@ const Mileage = ({ user }) => {
   }, [selectedBike]);
 
   return (
-    <div
-      style={{
-        maxWidth: "800px",
-        margin: "auto",
-        padding: "20px",
-      }}
-    >
+    <div style={{ maxWidth: "800px", margin: "auto", padding: "20px" }}>
       <h3>📊 Mileage Report</h3>
 
-      {/* Bike Selector */}
       <div
         style={{
           padding: 15,
@@ -167,6 +178,7 @@ const Mileage = ({ user }) => {
             <thead>
               <tr>
                 <th>S.No</th>
+                <th>Date</th>
                 <th>Before Reserve KM</th>
                 <th>Petrol Poured (L)</th>
                 <th>After Reserve KM</th>
@@ -177,6 +189,7 @@ const Mileage = ({ user }) => {
               {rows.map((r, idx) => (
                 <tr key={idx}>
                   <td>{idx + 1}</td>
+                  <td>{formatDateToIST(r.date)}</td>
                   <td>{r.beforeKM}</td>
                   <td>{r.petrolLitres}</td>
                   <td>{r.afterKM}</td>
