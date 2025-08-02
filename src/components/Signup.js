@@ -1,75 +1,93 @@
-// src/components/Signup.js
 import React, { useState } from "react";
 import { createUserWithEmailAndPassword } from "firebase/auth";
-import { doc, setDoc } from "firebase/firestore";
+import { setDoc, doc } from "firebase/firestore";
 import { auth, db } from "../firebase";
 
-const Signup = ({ onSignup }) => {
-  const [form, setForm] = useState({
-    name: "",
-    age: "",
-    email: "",
-    password: "",
-    confirmPassword: "",
-    gender: "",
-    contact: "",
-  });
+const Signup = ({ onSignupSuccess }) => {
+  const [name, setName] = useState("");
+  const [age, setAge] = useState("");
+  const [gender, setGender] = useState("");
+  const [mobile, setMobile] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
 
-  const handleChange = (e) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
-  };
-
-  const handleSignup = async () => {
-    const { name, age, email, password, confirmPassword, gender, contact } = form;
-
-    if (!name || !age || !email || !password || !confirmPassword || !gender || !contact) {
-      alert("❗Please fill all fields");
-      return;
-    }
-
-    if (password !== confirmPassword) {
-      alert("❗Passwords do not match");
-      return;
-    }
-
+  const handleSignup = async (e) => {
+    e.preventDefault();
+    setLoading(true);
     try {
+      // 1. Create user account
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-      const uid = userCredential.user.uid;
 
-      await setDoc(doc(db, "users", uid), {
+      // 2. Store extra fields in Firestore
+      await setDoc(doc(db, "users", userCredential.user.uid), {
         name,
         age,
-        email,
         gender,
-        contact,
-        uid,
-        createdAt: new Date().toISOString(),
+        mobile,
+        email
       });
 
-      localStorage.setItem("user", JSON.stringify({ name, age, email, gender, contact, uid }));
-      alert("✅ Signup successful!");
-      onSignup();
+      alert("Signup successful!");
+      onSignupSuccess && onSignupSuccess();
     } catch (error) {
-      alert("Signup failed: " + error.message);
-      console.error(error);
+      console.error("Signup error:", error);
+      alert(error.message);
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
     <div style={{ padding: 20 }}>
-      <h2>📝 Create Account</h2>
-      <input name="name" placeholder="Name" onChange={handleChange} /><br />
-      <input name="age" type="number" placeholder="Age" onChange={handleChange} /><br />
-      <input name="email" type="email" placeholder="Email ID" onChange={handleChange} /><br />
-      <input name="password" type="password" placeholder="Password" onChange={handleChange} /><br />
-      <input name="confirmPassword" type="password" placeholder="Confirm Password" onChange={handleChange} /><br />
-      <select name="gender" onChange={handleChange}>
-        <option value="">Select Gender</option>
-        <option value="Male">Male</option>
-        <option value="Female">Female</option>
-      </select><br />
-      <input name="contact" placeholder="Contact Number" onChange={handleChange} /><br />
-      <button onClick={handleSignup}>Signup</button>
+      <h2>Signup</h2>
+      <form onSubmit={handleSignup}>
+        <input
+          type="text"
+          placeholder="Name"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          required
+        /><br />
+        <input
+          type="number"
+          placeholder="Age"
+          value={age}
+          onChange={(e) => setAge(e.target.value)}
+          required
+        /><br />
+        <input
+          type="text"
+          placeholder="Gender"
+          value={gender}
+          onChange={(e) => setGender(e.target.value)}
+          required
+        /><br />
+        <input
+          type="text"
+          placeholder="Mobile Number"
+          value={mobile}
+          onChange={(e) => setMobile(e.target.value)}
+          required
+        /><br />
+        <input
+          type="email"
+          placeholder="Email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          required
+        /><br />
+        <input
+          type="password"
+          placeholder="Password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          required
+        /><br />
+        <button type="submit" disabled={loading}>
+          {loading ? "Signing up..." : "Sign Up"}
+        </button>
+      </form>
     </div>
   );
 };

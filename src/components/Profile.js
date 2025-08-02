@@ -1,7 +1,7 @@
 // src/components/Profile.js
 import React, { useEffect, useState } from "react";
 import { doc, getDoc, updateDoc } from "firebase/firestore";
-import { updatePassword } from "firebase/auth";
+import { updatePassword, reauthenticateWithCredential, EmailAuthProvider } from "firebase/auth";
 import { db } from "../firebase";
 import useAuth from "../auth/useAuth";
 
@@ -10,8 +10,13 @@ const Profile = () => {
   const [profile, setProfile] = useState(null);
   const [editing, setEditing] = useState(false);
   const [form, setForm] = useState({});
-  const [newPassword, setNewPassword] = useState("");
   const [loading, setLoading] = useState(true);
+
+  // For password change
+  const [showPasswordFields, setShowPasswordFields] = useState(false);
+  const [oldPassword, setOldPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
 
   useEffect(() => {
     if (user) {
@@ -55,13 +60,27 @@ const Profile = () => {
 
   const handlePasswordChange = async () => {
     try {
-      if (!newPassword) {
-        alert("Enter a new password");
+      if (!oldPassword || !newPassword || !confirmPassword) {
+        alert("Fill all fields");
         return;
       }
+      if (newPassword !== confirmPassword) {
+        alert("New password and confirm password do not match");
+        return;
+      }
+
+      // Re-authenticate with old password
+      const credential = EmailAuthProvider.credential(user.email, oldPassword);
+      await reauthenticateWithCredential(user, credential);
+
       await updatePassword(user, newPassword);
-      alert("Password updated!");
+      alert("Password updated successfully!");
+
+      // Reset fields
+      setOldPassword("");
       setNewPassword("");
+      setConfirmPassword("");
+      setShowPasswordFields(false);
     } catch (err) {
       console.error("Error updating password:", err);
       alert("Error updating password: " + err.message);
@@ -109,14 +128,6 @@ const Profile = () => {
             onChange={handleEditChange}
           />
           <br />
-          <input
-            type="number"
-            name="bikeCount"
-            value={form.bikeCount || ""}
-            placeholder="No. of Bikes"
-            onChange={handleEditChange}
-          />
-          <br />
           <button onClick={handleSaveProfile}>Save</button>
         </>
       ) : (
@@ -126,20 +137,48 @@ const Profile = () => {
           <p>⚧️ Gender: {profile.gender || "-"}</p>
           <p>📧 Email: {profile.email || user.email}</p>
           <p>📱 Contact: {profile.mobile || "-"}</p>
-          <p>🏍️ Bike Count: {profile.bikeCount || "-"}</p>
           <button onClick={() => setEditing(true)}>✏️ Edit Profile</button>
         </>
       )}
 
       <div style={{ marginTop: "20px" }}>
         <h3>🔑 Change Password</h3>
-        <input
-          type="password"
-          value={newPassword}
-          placeholder="New Password"
-          onChange={(e) => setNewPassword(e.target.value)}
-        />
-        <button onClick={handlePasswordChange}>Update Password</button>
+        {!showPasswordFields ? (
+          <button onClick={() => setShowPasswordFields(true)}>
+            Change Password
+          </button>
+        ) : (
+          <div style={{ marginTop: "10px" }}>
+            <input
+              type="password"
+              value={oldPassword}
+              placeholder="Old Password"
+              onChange={(e) => setOldPassword(e.target.value)}
+            />
+            <br />
+            <input
+              type="password"
+              value={newPassword}
+              placeholder="New Password"
+              onChange={(e) => setNewPassword(e.target.value)}
+            />
+            <br />
+            <input
+              type="password"
+              value={confirmPassword}
+              placeholder="Confirm New Password"
+              onChange={(e) => setConfirmPassword(e.target.value)}
+            />
+            <br />
+            <button onClick={handlePasswordChange}>Update Password</button>
+            <button
+              style={{ marginLeft: "10px" }}
+              onClick={() => setShowPasswordFields(false)}
+            >
+              Cancel
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );

@@ -1,57 +1,126 @@
 import React, { useState } from "react";
 import { signInWithEmailAndPassword } from "firebase/auth";
-import { doc, getDoc } from "firebase/firestore";
-import { auth, db } from "../firebase";
+import { auth } from "../firebase";
 
-const Signin = ({ onSignin }) => {
-  const [form, setForm] = useState({
-    email: "",
-    password: "",
-  });
+const Signin = ({ onSigninSuccess }) => {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
 
-  const handleChange = (e) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
-  };
-
-  const handleSignin = async () => {
+  const handleLogin = async (e) => {
+    e.preventDefault();
+    setLoading(true);
     try {
-      const userCredential = await signInWithEmailAndPassword(auth, form.email, form.password);
-      const uid = userCredential.user.uid;
-
-      // Get user data from Firestore
-      const docRef = doc(db, "users", uid);
-      const docSnap = await getDoc(docRef);
-
-      if (docSnap.exists()) {
-        const userData = docSnap.data();
-        localStorage.setItem("user", JSON.stringify(userData));
-        alert("✅ Login successful!");
-        onSignin();
-      } else {
-        alert("⚠️ User data not found in Firestore.");
-      }
-    } catch (error) {
-      alert("Signin failed: " + error.message);
-      console.error(error);
+      await signInWithEmailAndPassword(auth, email, password);
+      alert("Login successful!");
+      onSigninSuccess && onSigninSuccess();
+    } catch (err) {
+      console.error("Login error:", err);
+      alert("Login failed: " + err.message);
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <div style={{ padding: 20 }}>
-      <h2>🔐 Sign In</h2>
-      <input
-        name="email"
-        type="email"
-        placeholder="Email ID"
-        onChange={handleChange}
-      /><br />
-      <input
-        name="password"
-        type="password"
-        placeholder="Password"
-        onChange={handleChange}
-      /><br />
-      <button onClick={handleSignin}>Login</button>
+    <div style={{
+      display: "flex",
+      justifyContent: "center",
+      alignItems: "center",
+      height: "100vh",
+      backgroundColor: "#e6f2ff"
+    }}>
+      <div style={{
+        backgroundColor: "#b3d9ff",
+        padding: "40px",
+        borderRadius: "20px",
+        boxShadow: "0px 0px 10px rgba(0,0,0,0.2)",
+        width: "300px",
+        textAlign: "center"
+      }}>
+        <div style={{ fontSize: "60px", color: "#0059b3", marginBottom: "20px" }}>
+          👤
+        </div>
+        <form onSubmit={handleLogin}>
+          <div style={{ marginBottom: "15px" }}>
+            <input
+              type="email"
+              placeholder="Username"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+              style={{
+                width: "100%",
+                padding: "10px",
+                borderRadius: "8px",
+                border: "1px solid #ccc",
+              }}
+            />
+          </div>
+          <div style={{ marginBottom: "10px", position: "relative" }}>
+            <input
+              type={showPassword ? "text" : "password"}
+              placeholder="Password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+              style={{
+                width: "100%",
+                padding: "10px",
+                borderRadius: "8px",
+                border: "1px solid #ccc",
+              }}
+            />
+            <span
+              onClick={() => setShowPassword(!showPassword)}
+              style={{
+                position: "absolute",
+                right: "10px",
+                top: "50%",
+                transform: "translateY(-50%)",
+                cursor: "pointer",
+                fontSize: "14px",
+                color: "#333",
+              }}
+            >
+              {showPassword ? "🙈" : "👁️"}
+            </span>
+          </div>
+
+          <div style={{
+            display: "flex",
+            justifyContent: "space-between",
+            fontSize: "12px",
+            marginBottom: "15px",
+            alignItems: "center"
+          }}>
+            <label>
+              <input type="checkbox" /> Remember me
+            </label>
+            <span style={{ color: "#004080", cursor: "pointer" }}>
+              Forgot password?
+            </span>
+          </div>
+
+          <button
+            type="submit"
+            disabled={loading}
+            style={{
+              width: "100%",
+              padding: "10px",
+              backgroundColor: "#0066cc",
+              color: "#fff",
+              border: "none",
+              borderRadius: "8px",
+              cursor: "pointer",
+              fontWeight: "bold",
+            }}
+          >
+            {loading ? "Logging in..." : "LOGIN"}
+          </button>
+        </form>
+      </div>
     </div>
   );
 };
