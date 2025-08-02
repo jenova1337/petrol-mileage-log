@@ -8,6 +8,7 @@ import ReserveAlert from "./ReserveAlert";
 import PetrolPump from "./PetrolPump";
 import Mileage from "./Mileage";
 import Summary from "./Summary";
+import MonthWiseExpense from "./MonthWiseExpense"; // NEW IMPORT
 
 const Dashboard = ({ tab, setTab, onLogout, user }) => {
   const tabs = [
@@ -19,32 +20,33 @@ const Dashboard = ({ tab, setTab, onLogout, user }) => {
     { key: "petrolPump", label: "⛽ Petrol Pump" },
     { key: "mileage", label: "📊 Mileage" },
     { key: "summary", label: "📈 Summary" },
+    { key: "monthExpense", label: "🗓️ Month-wise Expense" }, // NEW TAB
   ];
 
-
-
-const renderTabContent = () => {
-  switch (tab) {
-    case "profile":
-      return <Profile user={user} />;
-    case "instructions":
-      return <Instructions />;
-    case "addBike":
-      return <AddBike user={user} />;
-    case "bikeDetails":
-      return <BikeDetails user={user} />;
-    case "reserveAlert":
-      return <ReserveAlert user={user} />;
-    case "petrolPump":
-      return <PetrolPump user={user} />;
-    case "mileage":
-      return <Mileage user={user} />;
-    case "summary":
-      return <Summary user={user} />;
-    default:
-      return null;
-  }
-};
+  const renderTabContent = () => {
+    switch (tab) {
+      case "profile":
+        return <Profile user={user} />;
+      case "instructions":
+        return <Instructions />;
+      case "addBike":
+        return <AddBike user={user} />;
+      case "bikeDetails":
+        return <BikeDetails user={user} />;
+      case "reserveAlert":
+        return <ReserveAlert user={user} />;
+      case "petrolPump":
+        return <PetrolPump user={user} />;
+      case "mileage":
+        return <Mileage user={user} />;
+      case "summary":
+        return <Summary user={user} />;
+      case "monthExpense": // NEW CASE
+        return <MonthWiseExpense user={user} />;
+      default:
+        return null;
+    }
+  };
 
   return (
     <div style={{ display: "flex", height: "100vh", fontFamily: "sans-serif" }}>
