@@ -30,17 +30,15 @@ const MonthWiseExpense = () => {
         "-" +
         String(logDate.getMonth() + 1).padStart(2, "0");
 
-      if (!monthWise[monthKey]) monthWise[monthKey] = {};
-
-      if (!monthWise[monthKey][log.bike]) {
-        monthWise[monthKey][log.bike] = { litres: 0, amount: 0 };
+      if (!monthWise[monthKey]) {
+        monthWise[monthKey] = { litres: 0, amount: 0 };
       }
 
-      monthWise[monthKey][log.bike].litres += parseFloat(log.litres || 0);
-      monthWise[monthKey][log.bike].amount += parseFloat(log.amount || 0);
+      monthWise[monthKey].litres += parseFloat(log.litres || 0);
+      monthWise[monthKey].amount += parseFloat(log.amount || 0);
     });
 
-    // Sort by latest month first
+    // Sort months descending
     const sorted = Object.keys(monthWise)
       .sort((a, b) => (a < b ? 1 : -1))
       .reduce((acc, key) => {
@@ -51,7 +49,6 @@ const MonthWiseExpense = () => {
     setMonthWiseSummary(sorted);
   };
 
-  // Convert YYYY-MM to readable "Month YYYY"
   const formatMonth = (key) => {
     const [year, month] = key.split("-");
     const monthNames = [
@@ -74,23 +71,19 @@ const MonthWiseExpense = () => {
           <tr>
             <th>S.No</th>
             <th>Month</th>
-            <th>Bike</th>
             <th>Total Litres</th>
             <th>Total Amount ₹</th>
           </tr>
         </thead>
         <tbody>
-          {Object.entries(monthWiseSummary).map(([month, bikes], monthIndex) =>
-            Object.entries(bikes).map(([bike, sum], bikeIndex) => (
-              <tr key={month + bike}>
-                <td>{monthIndex + 1}</td>
-                <td>{formatMonth(month)}</td>
-                <td>{bike}</td>
-                <td>{sum.litres.toFixed(2)}</td>
-                <td>{sum.amount.toFixed(2)}</td>
-              </tr>
-            ))
-          )}
+          {Object.entries(monthWiseSummary).map(([month, totals], index) => (
+            <tr key={month}>
+              <td>{index + 1}</td>
+              <td>{formatMonth(month)}</td>
+              <td>{totals.litres.toFixed(2)}</td>
+              <td>{totals.amount.toFixed(2)}</td>
+            </tr>
+          ))}
         </tbody>
       </table>
     </div>
