@@ -10,6 +10,7 @@ const Summary = () => {
   const [data, setData] = useState([]);
   const [weeklySummary, setWeeklySummary] = useState({});
   const [monthlySummary, setMonthlySummary] = useState({});
+  const [monthWiseSummary, setMonthWiseSummary] = useState({}); // NEW
   const [showSummary, setShowSummary] = useState(false);
 
   useEffect(() => {
@@ -24,6 +25,7 @@ const Summary = () => {
     querySnapshot.forEach((doc) => logs.push(doc.data()));
     setData(logs);
     calculateSummaries(logs);
+    calculateMonthWiseSummaries(logs);
   };
 
   const calculateSummaries = (logs) => {
@@ -48,7 +50,7 @@ const Summary = () => {
         weekly[log.bike].amount += amount;
       }
 
-      // Monthly
+      // Monthly (last 30 days)
       if (logDate >= oneMonthAgo) {
         if (!monthly[log.bike]) monthly[log.bike] = { km: 0, amount: 0 };
         monthly[log.bike].km += km;
@@ -58,6 +60,30 @@ const Summary = () => {
 
     setWeeklySummary(weekly);
     setMonthlySummary(monthly);
+  };
+
+  // NEW: month-wise totals grouped by YYYY-MM
+  const calculateMonthWiseSummaries = (logs) => {
+    const monthWise = {};
+
+    logs.forEach((log) => {
+      const logDate = new Date(log.date);
+      const monthKey =
+        logDate.getFullYear() +
+        "-" +
+        String(logDate.getMonth() + 1).padStart(2, "0");
+
+      if (!monthWise[monthKey]) monthWise[monthKey] = {};
+
+      if (!monthWise[monthKey][log.bike]) {
+        monthWise[monthKey][log.bike] = { litres: 0, amount: 0 };
+      }
+
+      monthWise[monthKey][log.bike].litres += parseFloat(log.litres || 0);
+      monthWise[monthKey][log.bike].amount += parseFloat(log.amount || 0);
+    });
+
+    setMonthWiseSummary(monthWise);
   };
 
   const groupByBike = () => {
@@ -87,7 +113,7 @@ const Summary = () => {
 
       const rows = logs.map((log, index) => [
         index + 1,
-        log.date,
+        new Date(log.date).toLocaleDateString("en-GB"),
         log.rate,
         log.amount,
         log.litres,
@@ -105,6 +131,35 @@ const Summary = () => {
     });
 
     doc.save("SummaryLog.pdf");
+  };
+
+  // NEW: Download Month-wise Summary PDF
+  const downloadMonthWisePDF = () => {
+    if (!monthWiseSummary || Object.keys(monthWiseSummary).length === 0) {
+      alert("No month-wise data to download!");
+      return;
+    }
+
+    const doc = new jsPDF();
+    doc.text("Month-wise Petrol Totals", 14, 10);
+
+    let finalY = 20;
+    const rows = [];
+
+    Object.entries(monthWiseSummary).forEach(([month, bikes]) => {
+      Object.entries(bikes).forEach(([bike, sum]) => {
+        rows.push([month, bike, sum.litres.toFixed(2), sum.amount.toFixed(2)]);
+      });
+    });
+
+    autoTable(doc, {
+      startY: finalY,
+      head: [["Month", "Bike", "Litres", "Amount ₹"]],
+      body: rows,
+      theme: "grid",
+    });
+
+    doc.save("MonthWiseSummary.pdf");
   };
 
   const bikeLogs = groupByBike();
@@ -133,7 +188,7 @@ const Summary = () => {
               {logs.map((log, idx) => (
                 <tr key={idx}>
                   <td>{idx + 1}</td>
-                  <td>{log.date}</td>
+                  <td>{new Date(log.date).toLocaleDateString("en-GB")}</td>
                   <td>{log.rate}</td>
                   <td>{log.amount}</td>
                   <td>{log.litres}</td>
@@ -163,7 +218,7 @@ const Summary = () => {
             ))}
           </ul>
 
-          <h4>📅 Monthly Summary</h4>
+          <h4>📅 Monthly Summary (last 30 days)</h4>
           <ul>
             {Object.entries(monthlySummary).map(([bike, sum]) => (
               <li key={bike}>
@@ -171,11 +226,47 @@ const Summary = () => {
               </li>
             ))}
           </ul>
+
+          {/* NEW: Month-wise Totals */}
+          <div
+            style={{
+              border: "2px solid #000",
+              padding: "10px",
+              marginTop: "20px",
+            }}
+          >
+            <h4>📅 Month-wise Totals</h4>
+            <table border="1" cellPadding="6">
+              <thead>
+                <tr>
+                  <th>Month</th>
+                  <th>Bike</th>
+                  <th>Total Litres</th>
+                  <th>Total Amount ₹</th>
+                </tr>
+              </thead>
+              <tbody>
+                {Object.entries(monthWiseSummary).map(([month, bikes]) =>
+                  Object.entries(bikes).map(([bike, sum], idx) => (
+                    <tr key={month + bike}>
+                      <td>{month}</td>
+                      <td>{bike}</td>
+                      <td>{sum.litres.toFixed(2)}</td>
+                      <td>{sum.amount.toFixed(2)}</td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+            <button onClick={downloadMonthWisePDF} style={{ marginTop: 10 }}>
+              📄 Download Month-wise Summary PDF
+            </button>
+          </div>
         </>
       )}
 
       <button onClick={downloadSummaryPDF} style={{ marginTop: 10 }}>
-        📄 Download Summary PDF
+        📄 Download Detailed Summary PDF
       </button>
     </div>
   );
