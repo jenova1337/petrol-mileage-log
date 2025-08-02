@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { signInWithEmailAndPassword } from "firebase/auth";
 import { auth } from "../firebase";
 
-const Signin = ({ onSigninSuccess }) => {
+const Signin = ({ onSigninSuccess, onShowSignup }) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -119,6 +119,29 @@ const Signin = ({ onSigninSuccess }) => {
           >
             {loading ? "Logging in..." : "LOGIN"}
           </button>
+
+          {/* Sign up link just below button */}
+          <div style={{ marginTop: "15px" }}>
+            <span style={{ color: "#333" }}>Don't have an account? </span>
+            <span
+              style={{
+                color: "#0047b3",
+                fontWeight: "bold",
+                cursor: "pointer",
+                textDecoration: "underline",
+              }}
+              onClick={() => {
+                // Use parent callback if available
+                if (onShowSignup) {
+                  onShowSignup();
+                } else {
+                  alert("Switch to signup screen!");
+                }
+              }}
+            >
+              Sign Up
+            </span>
+          </div>
         </form>
       </div>
     </div>
