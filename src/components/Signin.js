@@ -36,7 +36,7 @@ const Signin = ({ onSigninSuccess, onShowSignup }) => {
         padding: "40px",
         borderRadius: "20px",
         boxShadow: "0px 0px 10px rgba(0,0,0,0.2)",
-        width: "300px",
+        width: "320px",
         textAlign: "center"
       }}>
         <div style={{ fontSize: "60px", color: "#0059b3", marginBottom: "20px" }}>
@@ -103,44 +103,41 @@ const Signin = ({ onSigninSuccess, onShowSignup }) => {
             </span>
           </div>
 
-          <button
-            type="submit"
-            disabled={loading}
-            style={{
-              width: "100%",
-              padding: "10px",
-              backgroundColor: "#0066cc",
-              color: "#fff",
-              border: "none",
-              borderRadius: "8px",
-              cursor: "pointer",
-              fontWeight: "bold",
-            }}
-          >
-            {loading ? "Logging in..." : "LOGIN"}
-          </button>
-
-          {/* Sign up link just below button */}
-          <div style={{ marginTop: "15px" }}>
-            <span style={{ color: "#333" }}>Don't have an account? </span>
-            <span
+          {/* Button row: Login and Sign Up side by side */}
+          <div style={{ display: "flex", gap: "10px", marginTop: "10px" }}>
+            <button
+              type="submit"
+              disabled={loading}
               style={{
-                color: "#0047b3",
-                fontWeight: "bold",
+                flex: 1,
+                padding: "10px",
+                backgroundColor: "#0066cc",
+                color: "#fff",
+                border: "none",
+                borderRadius: "8px",
                 cursor: "pointer",
-                textDecoration: "underline",
-              }}
-              onClick={() => {
-                // Use parent callback if available
-                if (onShowSignup) {
-                  onShowSignup();
-                } else {
-                  alert("Switch to signup screen!");
-                }
+                fontWeight: "bold",
               }}
             >
-              Sign Up
-            </span>
+              {loading ? "Logging in..." : "LOGIN"}
+            </button>
+
+            <button
+              type="button"
+              onClick={() => onShowSignup && onShowSignup()}
+              style={{
+                flex: 1,
+                padding: "10px",
+                backgroundColor: "#00b33c",
+                color: "#fff",
+                border: "none",
+                borderRadius: "8px",
+                cursor: "pointer",
+                fontWeight: "bold",
+              }}
+            >
+              SIGN UP
+            </button>
           </div>
         </form>
       </div>

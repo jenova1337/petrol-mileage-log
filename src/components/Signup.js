@@ -3,7 +3,7 @@ import { createUserWithEmailAndPassword } from "firebase/auth";
 import { setDoc, doc } from "firebase/firestore";
 import { auth, db } from "../firebase";
 
-const Signup = ({ onSignupSuccess }) => {
+const Signup = ({ onSignupSuccess, onShowSignin }) => {
   const [name, setName] = useState("");
   const [age, setAge] = useState("");
   const [gender, setGender] = useState("");
@@ -63,13 +63,7 @@ const Signup = ({ onSignupSuccess }) => {
             value={name}
             onChange={(e) => setName(e.target.value)}
             required
-            style={{
-              width: "100%",
-              padding: "10px",
-              borderRadius: "8px",
-              border: "1px solid #ccc",
-              marginBottom: "10px",
-            }}
+            style={inputStyle}
           />
           <input
             type="number"
@@ -77,13 +71,7 @@ const Signup = ({ onSignupSuccess }) => {
             value={age}
             onChange={(e) => setAge(e.target.value)}
             required
-            style={{
-              width: "100%",
-              padding: "10px",
-              borderRadius: "8px",
-              border: "1px solid #ccc",
-              marginBottom: "10px",
-            }}
+            style={inputStyle}
           />
           <input
             type="text"
@@ -91,13 +79,7 @@ const Signup = ({ onSignupSuccess }) => {
             value={gender}
             onChange={(e) => setGender(e.target.value)}
             required
-            style={{
-              width: "100%",
-              padding: "10px",
-              borderRadius: "8px",
-              border: "1px solid #ccc",
-              marginBottom: "10px",
-            }}
+            style={inputStyle}
           />
           <input
             type="text"
@@ -105,13 +87,7 @@ const Signup = ({ onSignupSuccess }) => {
             value={mobile}
             onChange={(e) => setMobile(e.target.value)}
             required
-            style={{
-              width: "100%",
-              padding: "10px",
-              borderRadius: "8px",
-              border: "1px solid #ccc",
-              marginBottom: "10px",
-            }}
+            style={inputStyle}
           />
           <input
             type="email"
@@ -119,13 +95,7 @@ const Signup = ({ onSignupSuccess }) => {
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             required
-            style={{
-              width: "100%",
-              padding: "10px",
-              borderRadius: "8px",
-              border: "1px solid #ccc",
-              marginBottom: "10px",
-            }}
+            style={inputStyle}
           />
           <input
             type="password"
@@ -133,35 +103,57 @@ const Signup = ({ onSignupSuccess }) => {
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             required
-            style={{
-              width: "100%",
-              padding: "10px",
-              borderRadius: "8px",
-              border: "1px solid #ccc",
-              marginBottom: "10px",
-            }}
+            style={inputStyle}
           />
-          <button
-            type="submit"
-            disabled={loading}
-            style={{
-              width: "100%",
-              padding: "10px",
-              backgroundColor: "#0066cc",
-              color: "#fff",
-              border: "none",
-              borderRadius: "8px",
-              cursor: "pointer",
-              fontWeight: "bold",
-              marginTop: "10px"
-            }}
-          >
-            {loading ? "Signing up..." : "Sign Up"}
-          </button>
+
+          {/* Buttons row: Sign Up + Back to Login */}
+          <div style={{ display: "flex", gap: "10px", marginTop: "10px" }}>
+            <button
+              type="submit"
+              disabled={loading}
+              style={{
+                flex: 1,
+                padding: "10px",
+                backgroundColor: "#0066cc",
+                color: "#fff",
+                border: "none",
+                borderRadius: "8px",
+                cursor: "pointer",
+                fontWeight: "bold",
+              }}
+            >
+              {loading ? "Signing..." : "SIGN UP"}
+            </button>
+
+            <button
+              type="button"
+              onClick={() => onShowSignin && onShowSignin()}
+              style={{
+                flex: 1,
+                padding: "10px",
+                backgroundColor: "#00b33c",
+                color: "#fff",
+                border: "none",
+                borderRadius: "8px",
+                cursor: "pointer",
+                fontWeight: "bold",
+              }}
+            >
+              LOGIN
+            </button>
+          </div>
         </form>
       </div>
     </div>
   );
+};
+
+const inputStyle = {
+  width: "100%",
+  padding: "10px",
+  borderRadius: "8px",
+  border: "1px solid #ccc",
+  marginBottom: "10px",
 };
 
 export default Signup;

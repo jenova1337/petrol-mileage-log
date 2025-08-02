@@ -1,7 +1,10 @@
-// src/components/Profile.js
 import React, { useEffect, useState } from "react";
 import { doc, getDoc, updateDoc } from "firebase/firestore";
-import { updatePassword, reauthenticateWithCredential, EmailAuthProvider } from "firebase/auth";
+import {
+  updatePassword,
+  reauthenticateWithCredential,
+  EmailAuthProvider,
+} from "firebase/auth";
 import { db } from "../firebase";
 import useAuth from "../auth/useAuth";
 
@@ -12,7 +15,7 @@ const Profile = () => {
   const [form, setForm] = useState({});
   const [loading, setLoading] = useState(true);
 
-  // For password change
+  // Password change
   const [showPasswordFields, setShowPasswordFields] = useState(false);
   const [oldPassword, setOldPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
@@ -69,14 +72,11 @@ const Profile = () => {
         return;
       }
 
-      // Re-authenticate with old password
       const credential = EmailAuthProvider.credential(user.email, oldPassword);
       await reauthenticateWithCredential(user, credential);
-
       await updatePassword(user, newPassword);
-      alert("Password updated successfully!");
 
-      // Reset fields
+      alert("Password updated successfully!");
       setOldPassword("");
       setNewPassword("");
       setConfirmPassword("");
@@ -91,97 +91,153 @@ const Profile = () => {
   if (!profile) return <p style={{ padding: 20 }}>Profile not found.</p>;
 
   return (
-    <div style={{ padding: "20px", maxWidth: "600px", margin: "auto" }}>
-      <h2>👤 Profile Details</h2>
+    <div
+      style={{
+        display: "flex",
+        justifyContent: "center",
+        padding: "30px",
+        background: "linear-gradient(135deg, #e6f2ff, #f9f9ff)",
+        minHeight: "100%",
+      }}
+    >
+      <div
+        style={{
+          background: "#ffffff",
+          padding: "30px",
+          borderRadius: "15px",
+          boxShadow: "0px 0px 20px rgba(0,0,0,0.1)",
+          border: "2px solid #cce0ff",
+          maxWidth: "500px",
+          width: "100%",
+        }}
+      >
+        <h2
+          style={{
+            textAlign: "center",
+            color: "#0059b3",
+            marginBottom: "20px",
+          }}
+        >
+          👤 Profile Details
+        </h2>
 
-      {editing ? (
-        <>
-          <input
-            type="text"
-            name="name"
-            value={form.name || ""}
-            placeholder="Name"
-            onChange={handleEditChange}
-          />
-          <br />
-          <input
-            type="number"
-            name="age"
-            value={form.age || ""}
-            placeholder="Age"
-            onChange={handleEditChange}
-          />
-          <br />
-          <input
-            type="text"
-            name="gender"
-            value={form.gender || ""}
-            placeholder="Gender"
-            onChange={handleEditChange}
-          />
-          <br />
-          <input
-            type="text"
-            name="mobile"
-            value={form.mobile || ""}
-            placeholder="Mobile"
-            onChange={handleEditChange}
-          />
-          <br />
-          <button onClick={handleSaveProfile}>Save</button>
-        </>
-      ) : (
-        <>
-          <p>🧑 Name: {profile.name || "-"}</p>
-          <p>🎂 Age: {profile.age || "-"}</p>
-          <p>⚧️ Gender: {profile.gender || "-"}</p>
-          <p>📧 Email: {profile.email || user.email}</p>
-          <p>📱 Contact: {profile.mobile || "-"}</p>
-          <button onClick={() => setEditing(true)}>✏️ Edit Profile</button>
-        </>
-      )}
-
-      <div style={{ marginTop: "20px" }}>
-        <h3>🔑 Change Password</h3>
-        {!showPasswordFields ? (
-          <button onClick={() => setShowPasswordFields(true)}>
-            Change Password
-          </button>
-        ) : (
-          <div style={{ marginTop: "10px" }}>
-            <input
-              type="password"
-              value={oldPassword}
-              placeholder="Old Password"
-              onChange={(e) => setOldPassword(e.target.value)}
-            />
-            <br />
-            <input
-              type="password"
-              value={newPassword}
-              placeholder="New Password"
-              onChange={(e) => setNewPassword(e.target.value)}
-            />
-            <br />
-            <input
-              type="password"
-              value={confirmPassword}
-              placeholder="Confirm New Password"
-              onChange={(e) => setConfirmPassword(e.target.value)}
-            />
-            <br />
-            <button onClick={handlePasswordChange}>Update Password</button>
-            <button
-              style={{ marginLeft: "10px" }}
-              onClick={() => setShowPasswordFields(false)}
-            >
-              Cancel
+        {editing ? (
+          <>
+            {renderInput("name", "Name", form.name, handleEditChange)}
+            {renderInput("age", "Age", form.age, handleEditChange, "number")}
+            {renderInput("gender", "Gender", form.gender, handleEditChange)}
+            {renderInput("mobile", "Mobile", form.mobile, handleEditChange)}
+            <button style={buttonStyle} onClick={handleSaveProfile}>
+              💾 Save
             </button>
+          </>
+        ) : (
+          <div
+            style={{
+              lineHeight: "1.8",
+              fontSize: "16px",
+              border: "1px solid #cce0ff",
+              borderRadius: "10px",
+              padding: "20px",
+              marginBottom: "20px",
+              background: "#f9fcff",
+            }}
+          >
+            <p><b>🧑 Name:</b> {profile.name || "-"}</p>
+            <p><b>🎂 Age:</b> {profile.age || "-"}</p>
+            <p><b>⚧️ Gender:</b> {profile.gender || "-"}</p>
+            <p><b>📧 Email:</b> {profile.email || user.email}</p>
+            <p><b>📱 Contact:</b> {profile.mobile || "-"}</p>
           </div>
         )}
+
+        {!editing && (
+          <button
+            style={{ ...buttonStyle, background: "#00b33c" }}
+            onClick={() => setEditing(true)}
+          >
+            ✏️ Edit Profile
+          </button>
+        )}
+
+        {/* Change password */}
+        <div style={{ marginTop: "30px" }}>
+          <h3 style={{ color: "#0059b3" }}>🔑 Change Password</h3>
+          {!showPasswordFields ? (
+            <button
+              style={{ ...buttonStyle, background: "#ff9933" }}
+              onClick={() => setShowPasswordFields(true)}
+            >
+              Change Password
+            </button>
+          ) : (
+            <div
+              style={{
+                marginTop: "15px",
+                border: "1px solid #cce0ff",
+                padding: "15px",
+                borderRadius: "10px",
+                background: "#f0f8ff",
+              }}
+            >
+              {renderInput("", "Old Password", oldPassword, (e) =>
+                setOldPassword(e.target.value), "password")}
+              {renderInput("", "New Password", newPassword, (e) =>
+                setNewPassword(e.target.value), "password")}
+              {renderInput("", "Confirm New Password", confirmPassword, (e) =>
+                setConfirmPassword(e.target.value), "password")}
+              <div style={{ display: "flex", gap: "10px" }}>
+                <button
+                  style={{ ...buttonStyle, background: "#00b33c", flex: 1 }}
+                  onClick={handlePasswordChange}
+                >
+                  Update
+                </button>
+                <button
+                  style={{ ...buttonStyle, background: "#999", flex: 1 }}
+                  onClick={() => setShowPasswordFields(false)}
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );
+};
+
+// Helper styled input
+const renderInput = (name, placeholder, value, onChange, type = "text") => (
+  <input
+    type={type}
+    name={name}
+    value={value || ""}
+    placeholder={placeholder}
+    onChange={onChange}
+    style={{
+      width: "100%",
+      padding: "10px",
+      marginBottom: "10px",
+      border: "1px solid #b3d1ff",
+      borderRadius: "8px",
+      fontSize: "15px",
+    }}
+  />
+);
+
+const buttonStyle = {
+  display: "block",
+  width: "100%",
+  padding: "10px",
+  marginTop: "10px",
+  backgroundColor: "#0066cc",
+  color: "#fff",
+  border: "none",
+  borderRadius: "8px",
+  cursor: "pointer",
+  fontWeight: "bold",
 };
 
 export default Profile;
