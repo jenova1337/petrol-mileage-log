@@ -103,43 +103,44 @@ const Signin = ({ onSigninSuccess, onShowSignup }) => {
             </span>
           </div>
 
-          {/* Button row: Login and Sign Up side by side */}
-          <div style={{ display: "flex", gap: "10px", marginTop: "10px" }}>
-            <button
-              type="submit"
-              disabled={loading}
-              style={{
-                flex: 1,
-                padding: "10px",
-                backgroundColor: "#0066cc",
-                color: "#fff",
-                border: "none",
-                borderRadius: "8px",
-                cursor: "pointer",
-                fontWeight: "bold",
-              }}
-            >
-              {loading ? "Logging in..." : "LOGIN"}
-            </button>
-
-            <button
-              type="button"
-              onClick={() => onShowSignup && onShowSignup()}
-              style={{
-                flex: 1,
-                padding: "10px",
-                backgroundColor: "#00b33c",
-                color: "#fff",
-                border: "none",
-                borderRadius: "8px",
-                cursor: "pointer",
-                fontWeight: "bold",
-              }}
-            >
-              SIGN UP
-            </button>
-          </div>
+          {/* Single LOGIN button */}
+          <button
+            type="submit"
+            disabled={loading}
+            style={{
+              width: "100%",
+              padding: "10px",
+              backgroundColor: "#0066cc",
+              color: "#fff",
+              border: "none",
+              borderRadius: "8px",
+              cursor: "pointer",
+              fontWeight: "bold",
+            }}
+          >
+            {loading ? "Logging in..." : "LOGIN"}
+          </button>
         </form>
+
+        {/* Note below login form */}
+        <p style={{ marginTop: "15px", fontSize: "14px" }}>
+          Don't have an account?{" "}
+          <button
+            type="button"
+            onClick={() => onShowSignup && onShowSignup()}
+            style={{
+              background: "none",
+              border: "none",
+              color: "#004080",
+              cursor: "pointer",
+              fontWeight: "bold",
+              textDecoration: "underline",
+              padding: 0
+            }}
+          >
+            Sign Up
+          </button>
+        </p>
       </div>
     </div>
   );
