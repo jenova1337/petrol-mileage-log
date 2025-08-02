@@ -108,8 +108,22 @@ const ReserveAlert = ({ user }) => {
             borderRadius: 6,
           }}
         />
-
-        <button onClick={handleSave}>Save</button>
+<button
+  onClick={handleSave}
+  style={{
+    backgroundColor: "#1976d2",
+    color: "white",
+    padding: "12px 20px",
+    fontSize: "16px",
+    border: "none",
+    borderRadius: "6px",
+    cursor: "pointer",
+    fontWeight: "bold",
+    width: "100%"
+  }}
+>
+  Save💾
+</button>
       </div>
 
       <div
