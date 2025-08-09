@@ -58,7 +58,7 @@ const Signin = ({ onSigninSuccess, onShowSignup }) => {
               }}
             />
           </div>
-          <div style={{ marginBottom: "10px", position: "relative" }}>
+          <div style={{ marginBottom: "20px", position: "relative" }}>
             <input
               type={showPassword ? "text" : "password"}
               placeholder="Password"
@@ -85,21 +85,6 @@ const Signin = ({ onSigninSuccess, onShowSignup }) => {
               }}
             >
               {showPassword ? "🙈" : "👁️"}
-            </span>
-          </div>
-
-          <div style={{
-            display: "flex",
-            justifyContent: "space-between",
-            fontSize: "12px",
-            marginBottom: "15px",
-            alignItems: "center"
-          }}>
-            <label>
-              <input type="checkbox" /> Remember me
-            </label>
-            <span style={{ color: "#004080", cursor: "pointer" }}>
-              Forgot password?
             </span>
           </div>
 
