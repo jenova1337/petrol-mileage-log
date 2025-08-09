@@ -89,17 +89,21 @@ const Dashboard = ({ tab, setTab, onLogout, user }) => {
         }}
       >
         <button
-          onClick={() => setSidebarOpen(false)}
-          style={{
-            background: "none",
-            border: "none",
-            fontSize: "20px",
-            cursor: "pointer",
-            marginBottom: "20px",
-          }}
-        >
-          ✖
-        </button>
+  onClick={() => setSidebarOpen(false)}
+  style={{
+    position: "absolute",
+    top: "10px",
+    right: "-45px", // Move X mark outside sidebar towards right
+    background: "transparent",
+    border: "none",
+    fontSize: "24px",
+    cursor: "pointer",
+    color: "#000",
+    zIndex: 1002,
+  }}
+>
+  ✖
+</button>
 
         <h2 style={{ marginBottom: "20px" }}>🏍️ Dashboard</h2>
         {tabs.map((t) => (
