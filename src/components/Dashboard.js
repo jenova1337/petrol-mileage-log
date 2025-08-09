@@ -8,7 +8,7 @@ import ReserveAlert from "./ReserveAlert";
 import PetrolPump from "./PetrolPump";
 import Mileage from "./Mileage";
 import Summary from "./Summary";
-import MonthWiseExpense from "./MonthWiseExpense"; // NEW IMPORT
+import MonthWiseExpense from "./MonthWiseExpense";
 
 const Dashboard = ({ tab, setTab, onLogout, user }) => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -52,24 +52,46 @@ const Dashboard = ({ tab, setTab, onLogout, user }) => {
 
   return (
     <div style={{ height: "100vh", fontFamily: "sans-serif", overflow: "hidden" }}>
-      {/* Toggle Button */}
+      {/* Menu Button (☰) */}
       <button
         onClick={() => setSidebarOpen(true)}
         style={{
           position: "fixed",
-          top: "15px",
+          top: "8px", // shifted up slightly
           left: "15px",
           zIndex: 1100,
           background: "#4CAF50",
           color: "#fff",
-          padding: "8px 12px",
+          padding: "6px 10px",
           border: "none",
           borderRadius: "4px",
           cursor: "pointer",
         }}
       >
-        ☰ Menu
+        ☰
       </button>
+
+      {/* Close Button (✖) */}
+      {sidebarOpen && (
+        <button
+          onClick={() => setSidebarOpen(false)}
+          style={{
+            position: "fixed",
+            top: "8px", // align with menu button
+            left: "55px", // right next to menu button
+            background: "#f44336",
+            color: "#fff",
+            border: "none",
+            fontSize: "16px",
+            padding: "6px 10px",
+            borderRadius: "4px",
+            cursor: "pointer",
+            zIndex: 1100,
+          }}
+        >
+          ✖
+        </button>
+      )}
 
       {/* Sidebar */}
       <div
@@ -88,42 +110,6 @@ const Dashboard = ({ tab, setTab, onLogout, user }) => {
           overflowY: "auto",
         }}
       >
-        {/* Menu Button (☰) */}
-<button
-  onClick={() => setSidebarOpen(true)}
-  style={{
-    position: "fixed",
-    top: "10px",
-    left: "10px",
-    background: "transparent",
-    border: "none",
-    fontSize: "24px",
-    cursor: "pointer",
-    zIndex: 1001,
-  }}
->
-  ☰
-</button>
-
-{/* Close Button (✖) */}
-{sidebarOpen && (
-  <button
-    onClick={() => setSidebarOpen(false)}
-    style={{
-      position: "fixed",
-      top: "10px",
-      left: "60px", // This places ✖ just right of ☰
-      background: "transparent",
-      border: "none",
-      fontSize: "24px",
-      cursor: "pointer",
-      zIndex: 1001,
-    }}
-  >
-    ✖
-  </button>
-)}
-
         <h2 style={{ marginBottom: "20px" }}>🏍️ Dashboard</h2>
         {tabs.map((t) => (
           <button
