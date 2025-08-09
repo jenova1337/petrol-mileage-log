@@ -1,5 +1,5 @@
 // src/components/Dashboard.js
-import React from "react";
+import React, { useState } from "react";
 import Profile from "./Profile";
 import Instructions from "./Instructions";
 import AddBike from "./AddBike";
@@ -11,6 +11,8 @@ import Summary from "./Summary";
 import MonthWiseExpense from "./MonthWiseExpense"; // NEW IMPORT
 
 const Dashboard = ({ tab, setTab, onLogout, user }) => {
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+
   const tabs = [
     { key: "profile", label: "👤 Profile" },
     { key: "instructions", label: "📘 Instructions" },
@@ -20,7 +22,7 @@ const Dashboard = ({ tab, setTab, onLogout, user }) => {
     { key: "petrolPump", label: "⛽ Petrol Pump" },
     { key: "mileage", label: "📊 Mileage" },
     { key: "summary", label: "📈 Summary" },
-    { key: "monthExpense", label: "🗓️ Month-wise Expense" }, // NEW TAB
+    { key: "monthExpense", label: "🗓️ Month-wise Expense" },
   ];
 
   const renderTabContent = () => {
@@ -41,7 +43,7 @@ const Dashboard = ({ tab, setTab, onLogout, user }) => {
         return <Mileage user={user} />;
       case "summary":
         return <Summary user={user} />;
-      case "monthExpense": // NEW CASE
+      case "monthExpense":
         return <MonthWiseExpense user={user} />;
       default:
         return null;
@@ -49,21 +51,64 @@ const Dashboard = ({ tab, setTab, onLogout, user }) => {
   };
 
   return (
-    <div style={{ display: "flex", height: "100vh", fontFamily: "sans-serif" }}>
-      {/* Left Sidebar Tabs */}
+    <div style={{ height: "100vh", fontFamily: "sans-serif", overflow: "hidden" }}>
+      {/* Toggle Button */}
+      <button
+        onClick={() => setSidebarOpen(true)}
+        style={{
+          position: "fixed",
+          top: "15px",
+          left: "15px",
+          zIndex: 1100,
+          background: "#4CAF50",
+          color: "#fff",
+          padding: "8px 12px",
+          border: "none",
+          borderRadius: "4px",
+          cursor: "pointer",
+        }}
+      >
+        ☰ Menu
+      </button>
+
+      {/* Sidebar */}
       <div
         style={{
+          position: "fixed",
+          top: 0,
+          left: sidebarOpen ? "0" : "-240px",
           width: "220px",
+          height: "100%",
           backgroundColor: "#f0f0f0",
           padding: "20px",
           borderRight: "1px solid #ccc",
+          boxShadow: sidebarOpen ? "2px 0 5px rgba(0,0,0,0.3)" : "none",
+          transition: "left 0.3s ease",
+          zIndex: 1000,
+          overflowY: "auto",
         }}
       >
+        <button
+          onClick={() => setSidebarOpen(false)}
+          style={{
+            background: "none",
+            border: "none",
+            fontSize: "20px",
+            cursor: "pointer",
+            marginBottom: "20px",
+          }}
+        >
+          ✖
+        </button>
+
         <h2 style={{ marginBottom: "20px" }}>🏍️ Dashboard</h2>
         {tabs.map((t) => (
           <button
             key={t.key}
-            onClick={() => setTab(t.key)}
+            onClick={() => {
+              setTab(t.key);
+              setSidebarOpen(false);
+            }}
             style={{
               display: "block",
               width: "100%",
@@ -97,8 +142,14 @@ const Dashboard = ({ tab, setTab, onLogout, user }) => {
         </button>
       </div>
 
-      {/* Right Content Area */}
-      <div style={{ flex: 1, padding: "30px", overflowY: "auto" }}>
+      {/* Content */}
+      <div
+        style={{
+          height: "100vh",
+          overflowY: "auto",
+          padding: "30px",
+        }}
+      >
         {renderTabContent()}
       </div>
     </div>
