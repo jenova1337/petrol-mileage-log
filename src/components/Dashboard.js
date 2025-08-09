@@ -88,22 +88,41 @@ const Dashboard = ({ tab, setTab, onLogout, user }) => {
           overflowY: "auto",
         }}
       >
-        <button
-  onClick={() => setSidebarOpen(false)}
+        {/* Menu Button (☰) */}
+<button
+  onClick={() => setSidebarOpen(true)}
   style={{
-    position: "absolute",
+    position: "fixed",
     top: "10px",
-    right: "-45px", // Move X mark outside sidebar towards right
+    left: "10px",
     background: "transparent",
     border: "none",
     fontSize: "24px",
     cursor: "pointer",
-    color: "#000",
-    zIndex: 1002,
+    zIndex: 1001,
   }}
 >
-  ✖
+  ☰
 </button>
+
+{/* Close Button (✖) */}
+{sidebarOpen && (
+  <button
+    onClick={() => setSidebarOpen(false)}
+    style={{
+      position: "fixed",
+      top: "10px",
+      left: "60px", // This places ✖ just right of ☰
+      background: "transparent",
+      border: "none",
+      fontSize: "24px",
+      cursor: "pointer",
+      zIndex: 1001,
+    }}
+  >
+    ✖
+  </button>
+)}
 
         <h2 style={{ marginBottom: "20px" }}>🏍️ Dashboard</h2>
         {tabs.map((t) => (
